@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+
+<AnchorPane fx:id="confirmUserDeletionWindow" prefHeight="270.0" prefWidth="300.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.60" fx:controller="testGen.controller.ConfirmUsersDeletionController">
+   <children>
+      <Button layoutX="176.0" layoutY="147.0" mnemonicParsing="false" onAction="#confirmDeletingAccount" onKeyReleased="#confirmDeletingAccount" text="Zatwierdź" AnchorPane.bottomAnchor="25.0" AnchorPane.rightAnchor="60.0">
+         <font>
+            <Font size="13.0" />
+         </font>
+      </Button>
+      <Button layoutX="87.0" layoutY="147.0" mnemonicParsing="false" onAction="#closeWindowBtn" onKeyReleased="#closeBtnEnterKey" text="Zamknij" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="60.0">
+         <font>
+            <Font size="13.0" />
+         </font>
+      </Button>
+      <Label alignment="CENTER" layoutX="60.0" layoutY="28.0" prefWidth="175.0" text="Czy na pewno chcesz usunąć konto? Jeśli tak, wpisz swój login, hasło i zatwierdź." textAlignment="CENTER" wrapText="true" AnchorPane.leftAnchor="60.0" AnchorPane.rightAnchor="60.0" AnchorPane.topAnchor="25.0">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+      <TextField fx:id="confirmLogin" layoutX="60.0" layoutY="116.0" prefHeight="30.0" AnchorPane.leftAnchor="60.0" AnchorPane.rightAnchor="60.0">
+         <font>
+            <Font size="13.0" />
+         </font>
+      </TextField>
+      <PasswordField fx:id="confirmPassword" layoutX="60.0" layoutY="166.0" prefHeight="30.0" AnchorPane.leftAnchor="60.0" AnchorPane.rightAnchor="60.0">
+         <font>
+            <Font size="13.0" />
+         </font>
+      </PasswordField>
+   </children>
+</AnchorPane>

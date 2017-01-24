@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="200.0" prefWidth="320.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="testGen.controller.ServerController">
+   <children>
+      <TextArea fx:id="textField" layoutX="30.0" layoutY="27.0" prefHeight="150.0" prefWidth="200.0" />
+      <Button layoutX="257.0" layoutY="67.0" mnemonicParsing="false" onAction="#startServer" text="Start" />
+      <Button layoutX="257.0" layoutY="128.0" mnemonicParsing="false" onAction="#stopServer" text="Stop" />
+   </children>
+</AnchorPane>

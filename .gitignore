@@ -1,0 +1,11 @@
+# Ignore:
+# Every directory and file inside bin directory, wchich can be located anywhere below .gitignore:
+**/bin/**
+
+# Every directory and file inside .settings directory, wchich can be located anywhere below .gitignore:
+**/.settings/**
+
+# Specific filetypes:
+*.fxbuild
+.classpath
+.project

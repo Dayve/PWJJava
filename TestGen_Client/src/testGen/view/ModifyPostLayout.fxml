@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+
+<AnchorPane fx:id="modifyPostWindow" prefHeight="250.0" prefWidth="300.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.60" fx:controller="testGen.controller.ModifyPostController">
+   <children>
+      <Button layoutX="150.0" layoutY="196.0" mnemonicParsing="false" onAction="#confirmPostsModification" text="Zatwierdź" AnchorPane.bottomAnchor="25.0" AnchorPane.rightAnchor="76.0">
+         <font>
+            <Font size="13.0" />
+         </font>
+      </Button>
+      <Button layoutX="70.0" layoutY="196.0" mnemonicParsing="false" onAction="#closeWindowBtn" onKeyReleased="#closeBtnEnterKey" text="Anuluj" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="70.0">
+         <font>
+            <Font size="13.0" />
+         </font>
+      </Button>
+      <TextArea fx:id="postsContent" layoutX="32.0" layoutY="-16.0" prefHeight="200.0" prefWidth="200.0" wrapText="true" AnchorPane.bottomAnchor="75.0" AnchorPane.leftAnchor="25.0" AnchorPane.rightAnchor="25.0" AnchorPane.topAnchor="25.0">
+         <font>
+            <Font size="13.0" />
+         </font>
+      </TextArea>
+   </children>
+</AnchorPane>

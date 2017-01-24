@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane fx:id="fileManagerWindow" maxHeight="500.0" maxWidth="700.0" minHeight="500.0" minWidth="700.0" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="testGen.controller.FileManagerController">
+   <children>
+      <TableView fx:id="filesTableView" layoutX="25.0" layoutY="66.0" maxWidth="650.0" minWidth="650.0" prefHeight="378.0" prefWidth="650.0">
+        <columns>
+          <TableColumn maxWidth="220.0" minWidth="220.0" prefWidth="220.0" resizable="false" text="Nazwa pliku" />
+          <TableColumn maxWidth="200.0" minWidth="200.0" prefWidth="200.0" text="Autor" />
+            <TableColumn maxWidth="230.0" minWidth="230.0" prefWidth="230.0" text="Opis" />
+        </columns>
+      </TableView>
+      <TextField fx:id="fileSearchBar" layoutX="25.0" layoutY="24.0" prefHeight="26.0" prefWidth="650.0" promptText="Wyszukaj pliki po nazwie, autorze i opisie" />
+      <Button fx:id="addNewFileButton" onAction="#goToUploadWindow" layoutX="25.0" layoutY="460.0" maxWidth="210.0" minWidth="210.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="210.0" text="Dodaj nowy plik" />
+      <Button fx:id="downloadFileButton" layoutX="245.0" layoutY="460.0" maxWidth="210.0" minWidth="210.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="210.0" text="Pobierz zaznaczony plik" />
+      <Button fx:id="removeFileButton" layoutX="465.0" layoutY="460.0" maxWidth="210.0" minWidth="210.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="210.0" text="Usuń zaznaczony plik" />
+   </children>
+</AnchorPane>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="confManagerWindow" prefHeight="560.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="testGen.controller.ConferenceManagerController">
+   <children>
+      <Button layoutX="32.0" layoutY="465.0" mnemonicParsing="false" onAction="#closeWindowBtn" onKeyReleased="#closeBtnEnterKey" text="Zamknij okno" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="50.0">
+         <font>
+            <Font size="13.0" />
+         </font>
+      </Button>
+      <AnchorPane layoutX="30.0" layoutY="30.0" prefHeight="400.0" prefWidth="280.0" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="30.0">
+         <children>
+            <ListView fx:id="usersLV" layoutY="30.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+         </children>
+      </AnchorPane>
+      <Button layoutX="377.0" layoutY="501.0" mnemonicParsing="false" onAction="#confirmUserOperationBtn" text="Zatwierdź" AnchorPane.bottomAnchor="30.0" AnchorPane.rightAnchor="50.0">
+         <font>
+            <Font size="13.0" />
+         </font>
+      </Button>
+      <ComboBox fx:id="userOperationCB" layoutX="166.0" layoutY="501.0" prefHeight="29.0" prefWidth="190.0" promptText="Zmień role użytkowników" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="155.0" AnchorPane.rightAnchor="133.0" />
+      <Button layoutX="164.0" layoutY="450.0" mnemonicParsing="false" onAction="#deselectSelectAllUsers" text="Odznacz/zaznacz wszystkich">
+         <font>
+            <Font size="13.0" />
+         </font>
+      </Button>
+   </children>
+</AnchorPane>
