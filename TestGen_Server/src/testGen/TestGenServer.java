@@ -63,7 +63,7 @@ public class TestGenServer implements Runnable {
 
 		public ServerImplementation(Socket socket) {
 			// connect to database
-			dbConn = new DbConnection("todb", "todb", "todb");
+			dbConn = new DbConnection("pwjj_db", "pwjj_db", "pwjj_db");
 
 			// define socket
 			s = socket;

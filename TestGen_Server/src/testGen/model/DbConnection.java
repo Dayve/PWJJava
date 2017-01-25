@@ -244,7 +244,7 @@ public class DbConnection {
 	}
 
 	public Boolean removeUser(String login, String password) { // FIXME: CHANGE IT
-		Boolean succeeded = null;
+		/*Boolean succeeded = null;
 		Integer conferencesId = null;
 		String getTargetsConferences = "SELECT id_wydarzenia FROM uczestnik WHERE " +
 		"id_uzytkownika = (SELECT id_uzytkownika FROM uzytkownik WHERE login = (?) AND haslo = (?))"
@@ -282,7 +282,9 @@ public class DbConnection {
 			succeeded = false;
 			e.printStackTrace();
 		}
-		return succeeded;
+		return succeeded;*/
+		
+		return new Boolean(false);
 	}
 
 	public boolean addTest(Test c) {
@@ -351,7 +353,7 @@ public class DbConnection {
 		return succeeded;
 	}
 
-	public boolean editPost(User caller, Post post) { // FIXME: CHANGE IT
+	public boolean editPost(User caller, Post post) {
 		boolean succeeded = true;
 		Integer callersId = caller.getId();
 		String callersSignature = caller.getName() + " " + caller.getSurname() + " (" + caller.getLogin() + ")";
@@ -370,15 +372,15 @@ public class DbConnection {
 		try {
 			PreparedStatement pstmt = null;
 			if (callersId.equals(authorsId)) {
-				System.out.println("callerid equals");
 				pstmt = conn.prepareStatement(checkIfPostBelongsToUserQuery);
 			} else {
-				System.out.println("callerid doesnt equal");
 				pstmt = conn.prepareStatement(checkIfUserIsConferenceAdmin);
 			}
+			
 			pstmt.setInt(1, callersId);
 			pstmt.setInt(2, postsId);
 			ResultSet rs = pstmt.executeQuery();
+			
 			if (rs.isBeforeFirst()) {
 				pstmt = conn.prepareStatement(editPostProcedure);
 				pstmt.setInt(1, postsId);

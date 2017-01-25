@@ -139,10 +139,10 @@ CREATE OR REPLACE PROCEDURE add_test (
 	category IN KATEGORIE.NAZWA_KAT % TYPE,
 	startTime IN TESTY.CZAS_ROZPOCZECIA % TYPE,
 	endTime IN TESTY.CZAS_ZAKONCZENIA % TYPE
-) AS    
+) AS
 	testsCategoryID KATEGORIE.ID_KAT % TYPE;
 	savedTestID TESTY.ID_TESTU % TYPE;
-BEGIN    
+BEGIN
 	-- Get the ID for the given category:  
 	SELECT ID_KAT INTO testsCategoryID FROM KATEGORIE WHERE NAZWA_KAT = category;  
 
@@ -154,8 +154,21 @@ BEGIN
 	-- Assign the chosen user as an organizer:  
 	INSERT INTO UCZESTNICY (ID_UCZESTNIKA, ID_TESTU, ID_UZYT, ROLA)    
 	VALUES (null, savedTestID, organizerUserID, 'organizator');  
-END;   
-/  
+END;
+/
+
+CREATE OR REPLACE PROCEDURE edit_post (
+	postId IN NUMBER,
+	newContent IN VARCHAR2,
+	editor IN VARCHAR2
+) AS
+	editDate DATE := sysdate;  
+BEGIN
+	UPDATE POSTY SET   
+	TRESC = newContent || '\nOstatnio edytowano: ' || to_char(editDate,'yyyy-mm-dd hh24:mi:ss') || ' przez ' || editor || '.',
+	DATA_EDYCJI = editDate WHERE id_posta = postId;  
+END;
+/
 
 
 
