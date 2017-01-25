@@ -169,4 +169,23 @@ VALUES (null, 'tk', 'tk', 'Tomasz', 'Krzywonos');
 INSERT INTO UZYTKOWNICY (ID_UZYT, LOGIN, HASLO, IMIE, NAZWISKO)
 VALUES (null, 'js', 'js', 'Jan', 'Sekułowicz');
 
+INSERT INTO KATEGORIE (ID_KAT, NAZWA_KAT)
+VALUES (null, 'Programowanie wysokopoziomowe');
+
+INSERT INTO TESTY 
+(ID_TESTU, NAZWA_TESTU, OPIS_TESTU, LICZBA_PYTAN, LICZBA_ODPOWIEDZI, 
+CZAS_ROZPOCZECIA, CZAS_ZAKONCZENIA, ID_KAT)
+VALUES (
+  null, 
+  'Test wiedzy z zakresu języka Java', 
+  'Test obejmuje zarówno samą składnię, jak i podstawowe narzędzia języka,
+  takie jak kolekcje, serializacja obiektów, czy gniazda sieciowe.',
+  12,
+  4,
+  TO_DATE('2017/01/06 9:37', 'YYYY-MM-DD HH24:MI'),
+  TO_DATE('2017/01/06 9:37', 'YYYY-MM-DD HH24:MI'),
+  1 -- kategoria 1: Programowanie wysokopoziomowe
+);
+
+
 

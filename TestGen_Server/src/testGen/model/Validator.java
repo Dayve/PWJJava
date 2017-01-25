@@ -3,10 +3,10 @@ package testGen.model;
 import java.time.LocalDateTime;
 
 public interface Validator {
-	default public int isConferenceValid(Conference c) {
+	default public int isConferenceValid(Test c) {
 		int retCode = 0;
 
-		String name = c.getName(), subject = c.getSubject(), place = c.getPlace(), agenda = c.getAgenda();
+		String name = c.getName(), category = c.getCategory();
 		LocalDateTime startTime = c.getStartTime(), endTime = c.getEndTime();
 
 		// the start time is less than one hour from now
@@ -23,16 +23,8 @@ public interface Validator {
 			retCode |= 4;
 		}
 
-		if (subject.length() < 3 || subject.length() > 200) {
+		if (category.length() < 3 || category.length() > 200) {
 			retCode |= 8;
-		}
-
-		if (place.length() < 3 || place.length() > 250) {
-			retCode |= 16;
-		}
-
-		if (agenda.length() == 0) {
-			retCode |= 32;
 		}
 
 		return retCode;
@@ -46,8 +38,6 @@ public interface Validator {
 		String password = u.getPassword();
 		String name = u.getName();
 		String surname = u.getSurname();
-		String email = u.getEmail();
-		String organization = u.getOrganization();
 		
 		if (!(login.matches("[a-zA-Z0-9_]*")) || login.length() < 2) {
 			retCode |= 1;
@@ -59,15 +49,6 @@ public interface Validator {
 
 		if (name.length() < 2 || surname.length() < 2) {
 			retCode |= 4;
-		}
-		
-		if (email != null && (email.length() > 40 ||
-				!email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$"))) {
-			retCode |= 8;
-		}
-		
-		if (organization != null && organization.length() > 100) {
-			retCode |= 16;
 		}
 
 		return retCode;

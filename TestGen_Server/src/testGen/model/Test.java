@@ -5,24 +5,39 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class Conference implements Serializable {
+public class Test implements Serializable {
 
 	private static final long serialVersionUID = -6259050915073534863L;
 
 	private int id;
 	private ArrayList<User> organizers = new ArrayList<User>();
-	private ArrayList<User> prelectors = new ArrayList<User>();
 	private ArrayList<User> participants = new ArrayList<User>();
-	private ArrayList<User> sponsors = new ArrayList<User>();
 	private ArrayList<User> pending = new ArrayList<User>();
 
 	private String name;
-	private String subject;
+	private String category;
 	private LocalDateTime startTime;
 	private LocalDateTime endTime;
-	private String place;
+	private int nOfQuestions;
+	private int nOfAnswers;
 	private String description;
-	private String agenda;
+
+	
+	public int getnOfQuestions() {
+		return nOfQuestions;
+	}
+
+	public void setnOfQuestions(int nOfQuestions) {
+		this.nOfQuestions = nOfQuestions;
+	}
+
+	public int getnOfAnswers() {
+		return nOfAnswers;
+	}
+
+	public void setnOfAnswers(int nOfAnswers) {
+		this.nOfAnswers = nOfAnswers;
+	}
 
 	public static long getSerialversionuid() {
 		return serialVersionUID;
@@ -32,8 +47,8 @@ public class Conference implements Serializable {
 		return name;
 	}
 
-	public String getSubject() {
-		return subject;
+	public String getCategory() {
+		return category;
 	}
 
 	public LocalDateTime getStartTime() {
@@ -44,16 +59,8 @@ public class Conference implements Serializable {
 		return endTime;
 	}
 
-	public String getPlace() {
-		return place;
-	}
-
 	public String getDescription() {
 		return description;
-	}
-
-	public String getAgenda() {
-		return agenda;
 	}
 
 	public int getId() {
@@ -70,52 +77,46 @@ public class Conference implements Serializable {
 
 	public ArrayList<User> getParticipantsList() {
 		ArrayList<User> ret = new ArrayList<User>(organizers);
-		ret.addAll(prelectors);
-		ret.addAll(sponsors);
 		ret.addAll(participants);
 		ret.addAll(pending);
 		return ret;
 	}
 
-	public Conference(int id, String name, String subject, LocalDateTime startTime, LocalDateTime endTime, String place,
-			String description, String agenda, ArrayList<User> organizers) {
-		this(name, subject, startTime, endTime, place, description, agenda, organizers);
+	public Test(int id, String name, String category, int numQ, int numAns, LocalDateTime startTime, LocalDateTime endTime,
+			String description, ArrayList<User> organizers) {
+		this(name, category, numQ, numAns, startTime, endTime, description, organizers);
 		this.id = id;
 	}
 
-	public Conference(String name, String subject, LocalDateTime startTime, LocalDateTime endTime, String place,
-			String description, String agenda, ArrayList<User> organizers) {
+	public Test(String name, String category, int numQ, int numAns, LocalDateTime startTime, LocalDateTime endTime,
+			String description, ArrayList<User> organizers) {
 		this.name = name;
-		this.subject = subject;
+		this.category = category;
+		this.nOfQuestions = numQ;
+		this.nOfAnswers = numAns;
 		this.startTime = startTime;
 		this.endTime = endTime;
-		this.place = place;
 		this.description = description;
-		this.agenda = agenda;
 		this.organizers = organizers;
 	}
 
-	public Conference(String name, String subject, LocalDateTime startTime, LocalDateTime endTime, String place,
-			String description, String agenda, ArrayList<User> organizers, ArrayList<User> sponsors,
-			ArrayList<User> prelectors, ArrayList<User> participants, ArrayList<User> pending) {
+	public Test(String name, String category, int numQ, int numAns, LocalDateTime startTime, LocalDateTime endTime,
+			String description, ArrayList<User> organizers, ArrayList<User> participants, ArrayList<User> pending) {
 		this.name = name;
-		this.subject = subject;
+		this.category = category;
+		this.nOfQuestions = numQ;
+		this.nOfAnswers = numAns;
 		this.startTime = startTime;
 		this.endTime = endTime;
-		this.place = place;
 		this.description = description;
-		this.agenda = agenda;
 		this.organizers = organizers;
-		this.sponsors = sponsors;
 		this.participants = participants;
 		this.pending = pending;
-		this.prelectors = prelectors;
 	}
 
-	public Conference(int id, String name, String subject, LocalDateTime startTime, LocalDateTime endTime, String place,
-			String description, String agenda, ArrayList<User> organizers, ArrayList<User> sponsors,
-			ArrayList<User> prelectors, ArrayList<User> participants, ArrayList<User> pending) {
-		this(name, subject, startTime, endTime, place, description, agenda, organizers, sponsors, prelectors,
+	public Test(int id, String name, String category, int numQ, int numAns, LocalDateTime startTime, LocalDateTime endTime,
+			String description, ArrayList<User> organizers, ArrayList<User> participants, ArrayList<User> pending) {
+		this(name, category, numQ, numAns, startTime, endTime, description, organizers,
 				participants, pending);
 		this.id = id;
 	}
@@ -131,9 +132,10 @@ public class Conference implements Serializable {
 			}
 		}
 
-		String ret = "Temat: " + subject + "\nOrganizatorzy: " + organizersStr + "\nCzas rozpoczęcia: "
+		String ret = "Kategoria: " + category + "\nIlość pytań: " + nOfQuestions + "\nIlość możliwych odpowiedzi: " + nOfAnswers
+				+ "\nOrganizatorzy: " + organizersStr + "\nCzas rozpoczęcia: "
 				+ startTime.toString().replace("T", ", godz. ") + "\nCzas zakończenia: "
-				+ endTime.toString().replace("T", ", godz. ") + "\nMiejsce: " + place + "\nPlan: " + agenda;
+				+ endTime.toString().replace("T", ", godz. ");
 		if (this.description != null) {
 			ret += "\nOpis: " + description;
 		}

@@ -28,7 +28,7 @@ public class DbConnection {
 	}
 
 	public boolean doesUserExist(String login) {
-		String loginQuery = "select 1 from uzytkownik where login = (?)";
+		String loginQuery = "select 1 from UZYTKOWNICY where LOGIN = (?)";
 		try {
 			PreparedStatement pstmt = conn.prepareStatement(loginQuery);
 			pstmt.setString(1, login);
@@ -47,11 +47,13 @@ public class DbConnection {
 	 * @return user if matching pair is found, if not: -1
 	 */
 	public User getUser(String login, String password) {
-		String loginQuery = "select id_uzytkownika, login, imie, nazwisko, email, organizacja"
-				+ " from uzytkownik where login = (?) and haslo = (?)";
+		String loginQuery = "select ID_UZYT, LOGIN, IMIE, NAZWISKO"
+				+ " from UZYTKOWNICY where LOGIN = (?) and HASLO = (?)";
+		
 		Integer id = null;
 		User u = null;
-		String name, surname = null, email = null, organization = null;
+		String fetchedLogin, fetchedName, fetchedSurname = null;
+		
 		try {
 			PreparedStatement pstmt = conn.prepareStatement(loginQuery);
 			pstmt.setString(1, login);
@@ -59,12 +61,11 @@ public class DbConnection {
 			ResultSet rs = pstmt.executeQuery();
 			if (rs.next()) {
 				id = rs.getInt(1);
-				login = rs.getString(2);
-				name = rs.getString(3);
-				surname = rs.getString(4);
-				email = rs.getString(5);
-				organization = rs.getString(6);
-				u = new User(id, login, name, surname, email, organization);
+				fetchedLogin = rs.getString(2);
+				fetchedName = rs.getString(3);
+				fetchedSurname = rs.getString(4);
+
+				u = new User(id, fetchedLogin, fetchedName, fetchedSurname);
 			}
 			pstmt.close();
 		} catch (SQLException e) {
@@ -73,18 +74,18 @@ public class DbConnection {
 		return u;
 	}
 
-	public boolean addParticipant(int usersId, int conferencesId) {
+	public boolean addParticipant(int usersId, int testsId) {
 		boolean succeeded = true;
 
-		String addParticipantQuery = "insert into uczestnik(id_uczestnika, id_wydarzenia, id_uzytkownika, id_roli)"
+		String addParticipantQuery = "insert into UCZESTNICY(ID_UCZESTNIKA, ID_TESTU, ID_UZYT, ROLA)"
 				+ " values(?, ?, ?, ?)";
 
 		try {
 			PreparedStatement pstmt = conn.prepareStatement(addParticipantQuery);
 			pstmt.setNull(1, java.sql.Types.INTEGER);
-			pstmt.setInt(2, conferencesId);
+			pstmt.setInt(2, testsId);
 			pstmt.setInt(3, usersId);
-			pstmt.setInt(4, 5); // set role 5 - pending
+			pstmt.setString(4, "oczekujacy");
 			pstmt.executeUpdate();
 			pstmt.close();
 		} catch (SQLException e) {
@@ -95,42 +96,36 @@ public class DbConnection {
 		return succeeded;
 	}
 
-	public boolean updateUsersRoles(ArrayList<Integer> usersIds, UsersRole role, Integer conferenceId) {
+	public boolean updateUsersRoles(ArrayList<Integer> usersIds, UsersRole role, Integer targetTestId) {
 		boolean succeeded = true;
 
-		String selectParticipantIdQuery = "select id_uczestnika from uczestnik where "
-				+ "id_wydarzenia = (?) and id_uzytkownika = (?)";
-		String updateRoleQuery = "update uczestnik set id_roli = (?) WHERE id_uczestnika = (?)";
+		String selectParticipantIdQuery = "select ID_UCZESTNIKA from UCZESTNICY where "
+				+ "ID_TESTU = (?) and ID_UZYT = (?)";
+		String updateRoleQuery = "update UCZESTNICY set ROLA = (?) WHERE ID_UCZESTNIKA = (?)";
+		
 		Integer participantId = null;
-		Integer roleNumber = null;
+		String roleName = null;
 
 		switch (role) {
 			case ORGANIZER: {
-				roleNumber = 1;
-				break;
-			}
-			case PRELECTOR: {
-				roleNumber = 2;
+				roleName = "organizator";
 				break;
 			}
 			case PARTICIPANT: {
-				roleNumber = 3;
-				break;
-			}
-			case SPONSOR: {
-				roleNumber = 4;
+				roleName = "uczestnik";
 				break;
 			}
 			default:
 				break;
 		}
 
-		for (Integer id : usersIds) {
+		for (Integer userId : usersIds) {
 			try {
 				PreparedStatement pstmt = conn.prepareStatement(selectParticipantIdQuery);
-				pstmt.setInt(1, conferenceId);
-				pstmt.setInt(2, id);
+				pstmt.setInt(1, targetTestId);
+				pstmt.setInt(2, userId);
 				ResultSet rs = pstmt.executeQuery();
+				
 				if (rs.next()) {
 					participantId = rs.getInt(1);
 				}
@@ -138,7 +133,7 @@ public class DbConnection {
 
 				if (participantId != null) {
 					pstmt = conn.prepareStatement(updateRoleQuery);
-					pstmt.setInt(1, roleNumber);
+					pstmt.setString(1, roleName);
 					pstmt.setInt(2, participantId);
 					pstmt.executeUpdate();
 					pstmt.close();
@@ -146,67 +141,62 @@ public class DbConnection {
 
 			} catch (SQLException e) {
 				succeeded = false;
-				System.out.println("Removing a participant from database has failed.");
+				System.out.println("Changing the roles has failed.");
 				e.printStackTrace();
 			}
 		}
 		return succeeded;
 	}
 
-	public UsersRole checkUsersRole(Integer usersId, Integer conferencesId) {
+	public UsersRole checkUsersRole(Integer userId, Integer testId) {
 		UsersRole role = UsersRole.NONE;
-		String participantsRoleQuery = "select id_roli from uczestnik where " + "id_uczestnika = (?)";
-		Integer participantsId = getParticipantsId(usersId, conferencesId);
+		String participantsRoleQuery = "select ROLA from UCZESTNICY where ID_UCZESTNIKA = (?)";
+		Integer participantsId = getParticipantsId(userId, testId);
+		
 		try {
 			PreparedStatement pstmt = conn.prepareStatement(participantsRoleQuery);
 			pstmt.setInt(1, participantsId);
 			ResultSet rs = pstmt.executeQuery();
+			
 			if (rs.next()) {
-				Integer rolesId = rs.getInt(1);
-				switch (rolesId) {
-					case 1: {
+				String roleName = rs.getString(1);
+				
+				switch (roleName) {
+					case "organizator": {
 						role = UsersRole.ORGANIZER;
 						break;
 					}
-					case 2: {
-						role = UsersRole.PRELECTOR;
-						break;
-					}
-					case 3: {
+					case "uczestnik": {
 						role = UsersRole.PARTICIPANT;
 						break;
 					}
-					case 4: {
-						role = UsersRole.SPONSOR;
-						break;
-					}
-					case 5: {
+					case "oczekujacy": { // FIXME: Should we put special characters here?
 						role = UsersRole.PENDING;
 						break;
 					}
 					default: {
 						break;
 					}
-					// allParticipants[0] - organizers, [1] - prelectors,
-					// [2] - participants, [3]- sponsors, [4] - pending
 				}
 			}
 			pstmt.close();
 		} catch (SQLException | NullPointerException e) {
-//			role = UsersRole.NONE;
-//			e.printStackTrace();
+			role = UsersRole.NONE;
+			e.printStackTrace();
 		}
 		return role;
 	}
 
-	private Integer getParticipantsId(Integer usersId, Integer conferencesId) {
-		String selectParticipantsIdQuery = "select id_uczestnika from uczestnik where "
-				+ "id_uzytkownika = (?) and id_wydarzenia = (?)";
+	private Integer getParticipantsId(Integer usersId, Integer testsId) {
+		String selectParticipantsIdQuery = "select ID_UCZESTNIKA from UCZESTNICY where "
+				+ "ID_UZYT = (?) and ID_TESTU = (?)";
+		
 		Integer participantsId = null;
+		
 		try {
 			PreparedStatement pstmt = conn.prepareStatement(selectParticipantsIdQuery);
 			pstmt.setInt(1, usersId);
-			pstmt.setInt(2, conferencesId);
+			pstmt.setInt(2, testsId);
 			ResultSet rs = pstmt.executeQuery();
 			if (rs.next()) {
 				participantsId = rs.getInt(1);
@@ -230,13 +220,14 @@ public class DbConnection {
 		return succeeded;
 	}
 
-	public boolean removeParticipant(int usersId, int conferencesId) {
+	public boolean removeParticipant(int usersId, int testsId) {
 		boolean succeeded = true;
 
-		String removeParticipantQuery = "delete from uczestnik where id_uczestnika = (?)";
+		String removeParticipantQuery = "delete from UCZESTNICY where ID_UCZESTNIKA = (?)";
 		Integer participantsId = null;
 
-		participantsId = getParticipantsId(usersId, conferencesId);
+		participantsId = getParticipantsId(usersId, testsId);
+		
 		if (participantsId != null) {
 			try {
 				PreparedStatement pstmt = conn.prepareStatement(removeParticipantQuery);
@@ -252,7 +243,7 @@ public class DbConnection {
 		return succeeded;
 	}
 
-	public Boolean removeUser(String login, String password) {
+	public Boolean removeUser(String login, String password) { // FIXME: CHANGE IT
 		Boolean succeeded = null;
 		Integer conferencesId = null;
 		String getTargetsConferences = "SELECT id_wydarzenia FROM uczestnik WHERE " +
@@ -294,27 +285,21 @@ public class DbConnection {
 		return succeeded;
 	}
 
-	public boolean addConference(Conference c) {
+	public boolean addTest(Test c) {
 		boolean succeeded = true;
-
-		String name = c.getName(), subject = c.getSubject(), place = c.getPlace(), description = c.getDescription(),
-				agenda = c.getAgenda();
-		LocalDateTime startTime = c.getStartTime(), endTime = c.getEndTime();
-
-		User organizer = c.getFirstOrganizer();
-
-		String addConferenceProcedure = "{call add_event(?, ?, ?, ?, ?, ?, ?, ?)}";
-
-		String insertStartTime = startTime.toString().replace('T', ' ');
-		String insertEndTime = endTime.toString().replace('T', ' ');
+		String addConferenceProcedure = "{call add_test(?, ?, ?, ?, ?, ?, ?, ?)}";
+		
+		String insertStartTime = c.getStartTime().toString().replace('T', ' ');
+		String insertEndTime = c.getEndTime().toString().replace('T', ' ');
+		
 		try {
 			PreparedStatement pstmt = conn.prepareStatement(addConferenceProcedure);
-			pstmt.setInt(1, organizer.getId());
-			pstmt.setString(2, name);
-			pstmt.setString(3, subject);
-			pstmt.setString(4, place);
-			pstmt.setString(5, description);
-			pstmt.setString(6, agenda);
+			pstmt.setInt(1, c.getFirstOrganizer().getId());
+			pstmt.setString(2, c.getName());
+			pstmt.setString(3, c.getDescription());
+			pstmt.setInt(4, c.getnOfQuestions());
+			pstmt.setInt(5, c.getnOfAnswers());
+			pstmt.setString(6, c.getCategory());
 			pstmt.setString(7, insertStartTime);
 			pstmt.setString(8, insertEndTime);
 			pstmt.executeUpdate();
@@ -322,51 +307,51 @@ public class DbConnection {
 
 		} catch (SQLException e) {
 			succeeded = false;
-			System.out.println("Adding a conference to database has failed.");
+			System.out.println("Adding a test to database has failed.");
 			e.printStackTrace();
 		}
 		return succeeded;
 	}
 
-	public boolean removeConference(int conferenceId) {
+	public boolean removeTest(int testId) {
 		boolean succeeded = true;
 
-		String removeConferenceQuery = "delete from wydarzenie where id_wydarzenia = (?)";
+		String removeConferenceQuery = "delete from TESTY where ID_TESTU = (?)";
 
 		try {
 			PreparedStatement pstmt = conn.prepareStatement(removeConferenceQuery);
-			pstmt.setInt(1, conferenceId);
+			pstmt.setInt(1, testId);
 			pstmt.executeUpdate();
 			pstmt.close();
 		} catch (SQLException e) {
 			succeeded = false;
-			System.out.println("Removing a conference from database has failed.");
+			System.out.println("Removing a test from database has failed.");
 			e.printStackTrace();
 		}
 		return succeeded;
 	}
 
-	public boolean addPost(int userId, int conferenceId, String message) {
+	public boolean addPost(int userId, int testId, String message) {
 		boolean succeeded = true;
 
-		String addPostQuery = "insert into post (id_posta, id_wydarzenia,"
-				+ " id_uzytkownika, tresc, data_utworzenia, data_edycji) " + "values (null, ?, ?, ?, sysdate, sysdate)";
+		String addPostQuery = "insert into POSTY (ID_POSTA, ID_TESTU,"
+				+ " ID_UZYT, TRESC, DATA_UTWORZENIA, DATA_EDYCJI) " + "values (null, ?, ?, ?, sysdate, sysdate)";
 		try {
 			PreparedStatement pstmt = conn.prepareStatement(addPostQuery);
-			pstmt.setInt(1, conferenceId);
+			pstmt.setInt(1, testId);
 			pstmt.setInt(2, userId);
 			pstmt.setString(3, message);
 			pstmt.executeUpdate();
 			pstmt.close();
 		} catch (SQLException e) {
 			succeeded = false;
-			System.out.println("Adding a participant to database has failed.");
+			System.out.println("Adding a post to database has failed.");
 			e.printStackTrace();
 		}
 		return succeeded;
 	}
 
-	public boolean editPost(User caller, Post post) {
+	public boolean editPost(User caller, Post post) { // FIXME: CHANGE IT
 		boolean succeeded = true;
 		Integer callersId = caller.getId();
 		String callersSignature = caller.getName() + " " + caller.getSurname() + " (" + caller.getLogin() + ")";
@@ -374,11 +359,14 @@ public class DbConnection {
 		Integer authorsId = post.getAuthorsId();
 		String postsMessage = post.getContent();
 
-		String checkIfPostBelongsToUserQuery = "SELECT 1 FROM " + "post WHERE id_uzytkownika = (?) AND id_posta = (?)";
-		String checkIfUserIsConferenceAdmin = "SELECT 1 FROM uczestnik "
-				+ "WHERE id_uzytkownika = (?) AND id_roli = 1 AND id_wydarzenia "
-				+ "= (SELECT id_wydarzenia FROM post WHERE id_posta = (?))";
+		String checkIfPostBelongsToUserQuery = "select 1 from " + "POSTY where ID_UZYT = (?) and ID_POSTA = (?)";
+		
+		String checkIfUserIsConferenceAdmin = "select 1 from UCZESTNICY "
+				+ "where ID_UZYT = (?) and ROLA = 'organizator' and ID_TESTU "
+				+ "= (select ID_TESTU from POSTY where ID_POSTA = (?))";
+		
 		String editPostProcedure = "{call edit_post(?, ?, ?)}";
+		
 		try {
 			PreparedStatement pstmt = null;
 			if (callersId.equals(authorsId)) {
@@ -414,7 +402,7 @@ public class DbConnection {
 	public boolean addFile(Paper receivedPaper) {
 		boolean succeeded = true;
 
-		String addFileQuery = "insert into plik (id_pliku, id_wydarzenia, id_uzytkownika, nazwa, tresc, opis) "
+		String addFileQuery = "insert into PLIKI (ID_PLIKU, ID_TESTU, ID_UZYT, NAZWA, TRESC, OPIS) "
 				+ "values (null, ?, ?, ?, ?, ?)";
 
 		try {
@@ -432,7 +420,7 @@ public class DbConnection {
 			pstmt.close();
 		} catch (SQLException e) {
 			succeeded = false;
-			System.out.println("Adding a participant to database has failed.");
+			System.out.println("Adding a file to database has failed.");
 			e.printStackTrace();
 		}
 
@@ -440,9 +428,9 @@ public class DbConnection {
 	}
 
 	public ArrayList<FileInfo> getFileInfos(Integer conferenceId) {
-		String getFileInfosQuery = "select plik.id_pliku, plik.id_uzytkownika, uzytkownik.imie, uzytkownik.nazwisko, plik.nazwa, plik.opis"
-				+ " from plik join uzytkownik on plik.id_uzytkownika = uzytkownik.id_uzytkownika"
-				+ " where plik.id_wydarzenia = (?)";
+		String getFileInfosQuery = "select PLIKI.ID_PLIKU, PLIKI.ID_UZYT, UZYTKOWNICY.IMIE, UZYTKOWNICY.NAZWISKO, PLIKI.NAZWA, PLIKI.OPIS"
+				+ " from PLIKI join UZYTKOWNICY on PLIKI.ID_UZYT = UZYTKOWNICY.ID_UZYT"
+				+ " where PLIKI.ID_TESTU = (?)";
 
 		Integer authorsId = null, thisFileID = null;
 		String authorsName = null, authorsSurname = null, filename = null, fileDescription = null;
@@ -474,7 +462,7 @@ public class DbConnection {
 	}
 
 	public Paper getSpecificFile(Integer fileID) {
-		String getFileInfosQuery = "select tresc from plik where id_pliku = (?)";
+		String getFileInfosQuery = "select TRESC from PLIKI where ID_PLIKU = (?)";
 
 		byte[] rawFileContent = null;
 		Paper fetchedFile = new Paper();
@@ -500,7 +488,7 @@ public class DbConnection {
 	public boolean removeSpecificFile(Integer fileID) {
 		boolean succeeded = true;
 
-		String removeFileQuery = "delete from plik where id_pliku = (?)";
+		String removeFileQuery = "delete from PLIKI where ID_PLIKU = (?)";
 
 		try {
 			PreparedStatement pstmt = conn.prepareStatement(removeFileQuery);
@@ -517,7 +505,7 @@ public class DbConnection {
 	public boolean removeSpecificPost(Integer postID) {
 		boolean succeeded = true;
 
-		String removePostQuery = "delete from post where id_posta = (?)";
+		String removePostQuery = "delete from POSTY where ID_POSTA = (?)";
 
 		try {
 			PreparedStatement pstmt = conn.prepareStatement(removePostQuery);
@@ -533,9 +521,9 @@ public class DbConnection {
 
 	public ArrayList<Post> fetchConferencesPosts(Integer conferenceId) {
 		ArrayList<Post> posts = new ArrayList<Post>();
-		String fetchPostsQuery = "select id_posta, id_uzytkownika, "
-				+ "tresc, to_char(data_utworzenia,'yyyy-mm-dd hh24:mi:ss') FROM"
-				+ " post WHERE id_wydarzenia = ? ORDER BY data_utworzenia", message = null, timeStr = null;
+		String fetchPostsQuery = "select ID_POSTA, ID_UZYT, "
+				+ "TRESC, to_char(DATA_UTWORZENIA,'yyyy-mm-dd hh24:mi:ss') FROM "
+				+ "POSTY where ID_TESTU = ? order by DATA_UTWORZENIA", message = null, timeStr = null;
 		Integer postsId = null, usersId = null;
 		LocalDateTime time = null;
 		try {
@@ -567,7 +555,7 @@ public class DbConnection {
 		String password = u.getPassword();
 		String surname = u.getSurname();
 
-		String registerQuery = "insert into uzytkownik(id_uzytkownika, login, haslo, imie, nazwisko)"
+		String registerQuery = "insert into UZYTKOWNICY(ID_UZYT, LOGIN, HASLO, IMIE, NAZWISKO)"
 				+ " values(null , ?, ?, ?, ?)";
 
 		try {
@@ -591,27 +579,16 @@ public class DbConnection {
 		String name = u.getName();
 		String password = u.getPassword();
 		String surname = u.getSurname();
-		String email = u.getEmail();
-		String organization = u.getOrganization();
-		String registerQuery = "update uzytkownik set haslo = (?), imie = (?),"
-				+ " nazwisko = (?), email = (?), organizacja = (?) where id_uzytkownika = (?)";
+		
+		String registerQuery = "update UZYTKOWNICY set HASLO = (?), IMIE = (?),"
+				+ " NAZWISKO = (?) where ID_UZYT = (?)";
 
 		try {
 			PreparedStatement pstmt = conn.prepareStatement(registerQuery);
 			pstmt.setString(1, password);
 			pstmt.setString(2, name);
 			pstmt.setString(3, surname);
-			if (email == null) {
-				pstmt.setNull(4, java.sql.Types.VARCHAR);
-			} else {
-				pstmt.setString(4, email);
-			}
-			if (organization == null) {
-				pstmt.setNull(5, java.sql.Types.VARCHAR);
-			} else {
-				pstmt.setString(5, organization);
-			}
-			pstmt.setInt(6, u.getId());
+			pstmt.setInt(4, u.getId());
 			pstmt.executeUpdate();
 			pstmt.close();
 			return u;
@@ -621,36 +598,23 @@ public class DbConnection {
 		}
 	}
 
-	private ArrayList<ArrayList<User>> fetchAllConferenceParticipants(int conferenceId) {
+	private ArrayList<ArrayList<User>> fetchAllConferenceParticipants(int targetTestId) {
 		ArrayList<ArrayList<User>> allParticipants = new ArrayList<ArrayList<User>>();
 		ArrayList<User> organizers = new ArrayList<User>();
-		ArrayList<User> sponsors = new ArrayList<User>();
 		ArrayList<User> participants = new ArrayList<User>();
-		ArrayList<User> prelectors = new ArrayList<User>();
 		ArrayList<User> pending = new ArrayList<User>();
 		User u = null;
 
-		Integer userId = null, statusId = null;
-		String login = null, name = null, surname = null, email = null, organization = null,
-				// fetchParticipantsQuery = "SELECT uzytkownik.id_uzytkownika,
-				// uzytkownik.login, uzytkownik.imie, "
-				// + "uzytkownik.nazwisko, uzytkownik.email,
-				// uzytkownik.organizacja, "
-				// + "rola_uczestnika.id_roli FROM uzytkownik JOIN uczestnik ON
-				// "
-				// + "uzytkownik.id_uzytkownika = uczestnik.id_uzytkownika JOIN
-				// rola_uczestnika "
-				// + "ON uczestnik.id_uczestnika = rola_uczestnika.id_udzialu
-				// WHERE uczestnik.id_uczestnika "
-				// + "IN (SELECT id_uczestnika FROM uczestnik WHERE
-				// id_wydarzenia = (?))";
-				fetchParticipantsQuery = "SELECT uzytkownik.id_uzytkownika, uzytkownik.login, uzytkownik.imie, "
-						+ "uzytkownik.nazwisko, uzytkownik.email, uzytkownik.organizacja, "
-						+ "uczestnik.id_roli FROM uzytkownik JOIN uczestnik ON uzytkownik.id_uzytkownika = "
-						+ "uczestnik.id_uzytkownika WHERE uczestnik.id_wydarzenia = (?)";
+		Integer userId = null;
+		String login = null, name = null, surname = null, roleName = null;
+
+		String fetchParticipantsQuery = "select UZYTKOWNICY.ID_UZYT, UZYTKOWNICY.LOGIN, UZYTKOWNICY.IMIE, "
+				+ "UZYTKOWNICY.NAZWISKO, UCZESTNICY.ROLA from UZYTKOWNICY join UCZESTNICY "
+				+ "on UZYTKOWNICY.ID_UZYT = UCZESTNICY.ID_UZYT where UCZESTNICY.ID_TESTU = (?)";
+		
 		try {
 			PreparedStatement pstmt = conn.prepareStatement(fetchParticipantsQuery);
-			pstmt.setInt(1, conferenceId);
+			pstmt.setInt(1, targetTestId);
 
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
@@ -658,30 +622,20 @@ public class DbConnection {
 				login = rs.getString(2);
 				name = rs.getString(3);
 				surname = rs.getString(4);
-				email = rs.getString(5);
-				organization = rs.getString(6);
-				statusId = rs.getInt(7);
+				roleName = rs.getString(5);
 
-				u = new User(userId, login, name, surname, email, organization);
+				u = new User(userId, login, name, surname);
 
-				switch (statusId) {
-					case 1: {
+				switch (roleName) {
+					case "organizator": {
 						organizers.add(u);
 						break;
 					}
-					case 2: {
-						prelectors.add(u);
-						break;
-					}
-					case 3: {
+					case "uczestnik": {
 						participants.add(u);
 						break;
 					}
-					case 4: {
-						sponsors.add(u);
-						break;
-					}
-					case 5: {
+					case "oczekujacy": { // FIXME: Should we put special characters here?
 						pending.add(u);
 					}
 					default:
@@ -693,52 +647,59 @@ public class DbConnection {
 			e.printStackTrace();
 		}
 		allParticipants.add(organizers);
-		allParticipants.add(sponsors);
-		allParticipants.add(prelectors);
 		allParticipants.add(participants);
 		allParticipants.add(pending);
 
 		return allParticipants;
 	}
 
-	public Conference fetchConference(Integer conferenceId) {
-		Integer id = null;
-		String name = null, subject = null, place = null, description = null, agenda = null,
-				fetchConferenceQuery = "select id_wydarzenia, nazwa, temat, miejsce, opis,"
-						+ "plan, to_char(czas_rozpoczecia,'yyyy-mm-dd hh24:mi'), "
-						+ "to_char(czas_zakonczenia,'yyyy-mm-dd hh24:mi') from wydarzenie WHERE id_wydarzenia = (?)";
+	public Test fetchTest(Integer targetTestId) {
+		Integer fetchedTestId = null, numQuestions = null, numAnswers = null;
+		String name = null, description = null, category = null;
+
+		String fetchTestQuery = 
+				"select TESTY.ID_TESTU, TESTY.NAZWA_TESTU, TESTY.OPIS_TESTU, TESTY.LICZBA_PYTAN, TESTY.LICZBA_ODPOWIEDZI,"
+				+ "to_char(TESTY.CZAS_ROZPOCZECIA,'yyyy-mm-dd hh24:mi'), "
+				+ "to_char(TESTY.CZAS_ZAKONCZENIA,'yyyy-mm-dd hh24:mi'), "
+				+ "KATEGORIE.NAZWA_KAT "
+				+ "from TESTY join KATEGORIE on TESTY.ID_KAT = KATEGORIE.ID_KAT";
+		
 		LocalDateTime startTime, endTime;
-		Conference ret = null;
+		Test ret = null;
+		
 		try {
 			PreparedStatement pstmt;
 			String startTimeStr = null, endTimeStr = null;
 
-			pstmt = conn.prepareStatement(fetchConferenceQuery);
-			pstmt.setInt(1, conferenceId);
+			pstmt = conn.prepareStatement(fetchTestQuery);
+			pstmt.setInt(1, targetTestId);
 			ResultSet rs = pstmt.executeQuery();
+			
 			if (rs.next()) {
-				id = rs.getInt(1);
+				fetchedTestId = rs.getInt(1);
 				name = rs.getString(2);
-				subject = rs.getString(3);
-				place = rs.getString(4);
-				description = rs.getString(5);
-				agenda = rs.getString(6);
-				startTimeStr = rs.getString(7);
-				endTimeStr = rs.getString(8);
+				description = rs.getString(3);
+				numQuestions = rs.getInt(4);
+				numAnswers = rs.getInt(5);
+				startTimeStr = rs.getString(6);
+				endTimeStr = rs.getString(7);
+				category = rs.getString(8);
 			}
 			pstmt.close();
 
-			// allParticipants[0] - organizers, [1] - prelectors,
-			// [2] - participants, [3]- sponsors, [4] - pending
-			ArrayList<ArrayList<User>> allParticipants = fetchAllConferenceParticipants(id);
+			// allParticipants:
+			// [0] - organizers
+			// [1] - participants
+			// [2] - pending
+			
+			ArrayList<ArrayList<User>> allParticipants = fetchAllConferenceParticipants(targetTestId);
 
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 			startTime = LocalDateTime.parse(startTimeStr, formatter);
 			endTime = LocalDateTime.parse(endTimeStr, formatter);
 
-			ret = new Conference(id, name, subject, startTime, endTime, place, description, agenda,
-					allParticipants.get(0), allParticipants.get(1), allParticipants.get(2), allParticipants.get(3),
-					allParticipants.get(4));
+			ret = new Test(fetchedTestId, name, category, numQuestions, numAnswers, startTime, endTime, description,
+					allParticipants.get(0), allParticipants.get(1), allParticipants.get(2));
 
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -746,50 +707,56 @@ public class DbConnection {
 		return ret;
 	}
 
-	public ArrayList<Conference> fetchConferenceFeed() {
+	public ArrayList<Test> fetchTestFeed() {
 
 		// !past - show present and future conferences
 
-		Integer id = null;
-		String name = null, subject = null, place = null, description = null, agenda = null,
-				conferenceFeedQuery = "select id_wydarzenia, nazwa, temat, miejsce, opis,"
-						+ "plan, to_char(czas_rozpoczecia,'yyyy-mm-dd hh24:mi'), "
-						+ "to_char(czas_zakonczenia,'yyyy-mm-dd hh24:mi') from wydarzenie";
+		Integer testId = null, numQuestions = null, numAnswers = null;
+		String name = null, description = null, category = null;
+		String testFeedQuery = 
+				"select TESTY.ID_TESTU, TESTY.NAZWA_TESTU, TESTY.OPIS_TESTU, TESTY.LICZBA_PYTAN, TESTY.LICZBA_ODPOWIEDZI,"
+				+ "to_char(TESTY.CZAS_ROZPOCZECIA,'yyyy-mm-dd hh24:mi'), "
+				+ "to_char(TESTY.CZAS_ZAKONCZENIA,'yyyy-mm-dd hh24:mi'), "
+				+ "KATEGORIE.NAZWA_KAT "
+				+ "from TESTY join KATEGORIE on TESTY.ID_KAT = KATEGORIE.ID_KAT";
+		
 		LocalDateTime startTime, endTime;
-		ArrayList<Conference> conferenceFeed = new ArrayList<Conference>();
+		ArrayList<Test> testFeed = new ArrayList<Test>();
 
 		try {
 			PreparedStatement pstmt;
 			String startTimeStr, endTimeStr;
 
-			pstmt = conn.prepareStatement(conferenceFeedQuery);
+			pstmt = conn.prepareStatement(testFeedQuery);
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
-				id = rs.getInt(1);
+				testId = rs.getInt(1);
 				name = rs.getString(2);
-				subject = rs.getString(3);
-				place = rs.getString(4);
-				description = rs.getString(5);
-				agenda = rs.getString(6);
-				startTimeStr = rs.getString(7);
-				endTimeStr = rs.getString(8);
+				description = rs.getString(3);
+				numQuestions = rs.getInt(4);
+				numAnswers = rs.getInt(5);
+				startTimeStr = rs.getString(6);
+				endTimeStr = rs.getString(7);
+				category = rs.getString(8);
 
-				// allParticipants[0] - organizers, [1] - prelectors,
-				// [2] - participants, [3]- sponsors, [4] - pending
-				ArrayList<ArrayList<User>> allParticipants = fetchAllConferenceParticipants(id);
+				// allParticipants:
+				// [0] - organizers
+				// [1] - participants
+				// [2] - pending
+				
+				ArrayList<ArrayList<User>> allParticipants = fetchAllConferenceParticipants(testId);
 
 				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 				startTime = LocalDateTime.parse(startTimeStr, formatter);
 				endTime = LocalDateTime.parse(endTimeStr, formatter);
 
-				conferenceFeed.add(new Conference(id, name, subject, startTime, endTime, place, description, agenda,
-						allParticipants.get(0), allParticipants.get(1), allParticipants.get(2), allParticipants.get(3),
-						allParticipants.get(4)));
+				testFeed.add(new Test(testId, name, category, numQuestions, numAnswers, startTime, endTime, description,
+						allParticipants.get(0), allParticipants.get(1), allParticipants.get(2)));
 			}
 			pstmt.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return conferenceFeed;
+		return testFeed;
 	}
 }

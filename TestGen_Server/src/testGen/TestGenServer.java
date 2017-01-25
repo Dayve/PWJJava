@@ -10,7 +10,7 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import testGen.model.Conference;
+import testGen.model.Test;
 import testGen.model.DbConnection;
 import testGen.model.FileInfo;
 import testGen.model.Paper;
@@ -154,9 +154,9 @@ public class TestGenServer implements Runnable {
 
 		}
 
-		private void handleAddConference(Conference c) {
+		private void handleAddTest(Test newTest) {
 
-			int validationCode = isConferenceValid(c);
+			int validationCode = isConferenceValid(newTest);
 			String socketEvtName = "addConferenceFailed";
 			String message = "";
 			SocketEvent se = null;
@@ -170,7 +170,7 @@ public class TestGenServer implements Runnable {
 					"Pole \"Plan\" nie może być puste.");
 
 			if (validationCode == 0) { // if conference data is valid
-				if (!dbConn.addConference(c)) {
+				if (!dbConn.addTest(newTest)) {
 					message = "Nie udało się dodać konferencji. Błąd serwera.";
 				} else {
 					socketEvtName = "addConferenceSucceeded";
@@ -220,7 +220,7 @@ public class TestGenServer implements Runnable {
 			SocketEvent se = null;
 			if (uR == UsersRole.NONE) {
 				if (dbConn.expellUsers(usersIds, conferenceId)) {
-					Conference c = dbConn.fetchConference(conferenceId);
+					Test c = dbConn.fetchTest(conferenceId);
 					se = new SocketEvent("expellSucceeded", c);
 				} else {
 					se = new SocketEvent("expellFailed");
@@ -228,7 +228,7 @@ public class TestGenServer implements Runnable {
 
 			} else {
 				if (dbConn.updateUsersRoles(usersIds, uR, conferenceId)) {
-					Conference c = dbConn.fetchConference(conferenceId);
+					Test c = dbConn.fetchTest(conferenceId);
 					se = new SocketEvent("setRoleSucceeded", c);
 				} else {
 					se = new SocketEvent("setRoleFailed");
@@ -243,7 +243,7 @@ public class TestGenServer implements Runnable {
 
 		private void handleRemoveConference(int conferenceId) {
 			SocketEvent se = null;
-			if (!dbConn.removeConference(conferenceId)) {
+			if (!dbConn.removeTest(conferenceId)) {
 				se = new SocketEvent("removeConferenceFailed");
 			} else {
 				se = new SocketEvent("removeConferenceSucceeded");
@@ -278,12 +278,12 @@ public class TestGenServer implements Runnable {
 			}
 		}
 
-		private void handleConferenceFeed() {
-			ArrayList<Conference> conferenceFeed = dbConn.fetchConferenceFeed();
+		private void handleTestFeed() {
+			ArrayList<Test> testFeed = dbConn.fetchTestFeed();
 			SocketEvent se = null;
 
 			// create SocketEvent w ArrayList arg
-			se = new SocketEvent("updateConferenceFeed", conferenceFeed);
+			se = new SocketEvent("updateConferenceFeed", testFeed);
 			try {
 				objOut.writeObject(se);
 			} catch (IOException e1) {
@@ -399,7 +399,7 @@ public class TestGenServer implements Runnable {
 			}
 		}
 
-		private void handleFetchFileInfos(Conference forConference) {
+		private void handleFetchFileInfos(Test forConference) {
 			ArrayList<FileInfo> fileInfoList = dbConn.getFileInfos(forConference.getId());
 			if (fileInfoList != null) {
 				try {
@@ -505,7 +505,7 @@ public class TestGenServer implements Runnable {
 							break;
 						}
 						case "reqestFileList": {
-							Conference forConference = se.getObject(Conference.class);
+							Test forConference = se.getObject(Test.class);
 							handleFetchFileInfos(forConference);
 							break;
 						}
@@ -543,13 +543,13 @@ public class TestGenServer implements Runnable {
 							handleUpdateProfile(u, password);
 							break;
 						}
-						case "reqConferenceFeed": {
-							handleConferenceFeed();
+						case "reqTestFeed": {							// TODO: CHANGED
+							handleTestFeed();
 							break;
 						}
-						case "reqAddConference": {
-							Conference c = (Conference) se.getObject(Conference.class);
-							handleAddConference(c);
+						case "reqAddTest": {							// TODO: CHANGED
+							Test c = (Test) se.getObject(Test.class);
+							handleAddTest(c);
 							break;
 						}
 						case "reqJoinConference": {
