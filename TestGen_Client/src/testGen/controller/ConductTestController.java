@@ -1,9 +1,7 @@
 package testGen.controller;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
 
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -22,20 +20,21 @@ public class ConductTestController {
 	@FXML private Label timeLeftLabel;
 	@FXML private TextArea questionTextArea;
 	@FXML private FlowPane answersFlowPane;
-	@FXML private LocalDateTime testEndTime;
+	private LocalDateTime testEndTime;
+	private Integer currentQuestionNumber = 0;
 
 	private void bindToTime() {
-    	Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(0), new EventHandler<ActionEvent>() {
+		Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(0), new EventHandler<ActionEvent>() {
 			@Override public void handle(ActionEvent actionEvent) {
 				LocalDateTime currentTime = LocalDateTime.now();
-				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
 
-				long diffInSeconds = ChronoUnit.SECONDS.between(currentTime, testEndTime);
-				long diffInMinutes = ChronoUnit.MINUTES.between(currentTime, testEndTime);
-				long diffInHours = ChronoUnit.HOURS.between(currentTime, testEndTime);
+				Long diffInSeconds = ChronoUnit.SECONDS.between(currentTime, testEndTime);
+				Long secondsToDisplay = diffInSeconds % 60;
+				Long minutesToDisplay = (diffInSeconds / 60) % 60;
+				Long hoursToDisplay = (diffInSeconds / 3600) % 24;
 
-				timeLeftLabel.setText(simpleDateFormat.format(diffInHours + ":" + diffInMinutes + ":" + diffInSeconds));
-
+				timeLeftLabel.setText(
+						(hoursToDisplay.toString() + ":" + minutesToDisplay.toString() + ":" + secondsToDisplay.toString()));
 			}
 		}), new KeyFrame(Duration.seconds(1)));
 		timeline.setCycleCount(Animation.INDEFINITE);
@@ -47,14 +46,20 @@ public class ConductTestController {
 	}
 
 	@FXML public void initialize() {
-		//numberOfCurrentQuestionLabel;
+		numberOfCurrentQuestionLabel.setText(currentQuestionNumber.toString());
+		testEndTime = LocalDateTime.now().plusHours(13);
+		bindToTime();
 	}
 
-	private void previousQuestion() {
+	@FXML private void sendTest() {
 
 	}
 
-	private void nextQuestion() {
+	@FXML private void previousQuestion() {
+
+	}
+
+	@FXML private void nextQuestion() {
 
 	}
 }
