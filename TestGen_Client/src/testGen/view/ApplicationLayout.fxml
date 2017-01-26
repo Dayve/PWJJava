@@ -81,7 +81,7 @@
                   <Insets bottom="5.0" left="2.0" right="4.0" top="5.0" />
                </GridPane.margin>
             </Button>
-            <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#addConferenceBtn" text="Dodaj konferencję" GridPane.columnIndex="2">
+            <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#addConferenceBtn" text="Zaplanuj test" GridPane.columnIndex="2">
                <font>
                   <Font size="13.0" />
                </font>

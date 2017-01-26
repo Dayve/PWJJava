@@ -96,6 +96,7 @@ public class TestCreatorController implements Controller {
 		Integer numberOfAnswers = Integer.parseInt(numberOfAnswersBox.getText());
 
 		String category = categoriesComboBox.getValue();
+		String description = descriptionField.getText();
 
 		// get LocalDateTime from LocalDate
 		LocalDateTime startDate = startDateField.getValue().atStartOfDay();
@@ -106,12 +107,10 @@ public class TestCreatorController implements Controller {
 		String endMinCB = endMin.getSelectionModel().getSelectedItem();
 
 		// check if all hour and min combo boxes are filled
-		if (startHrCB != null && startMinCB != null && endHrCB != null && endMinCB != null) {
+		if (category != null && startHrCB != null && startMinCB != null && endHrCB != null && endMinCB != null) {
 
 			LocalDateTime startTime = startDate.plusHours(Long.parseLong(startHrCB)).plusMinutes(Long.parseLong(startMinCB));
 			LocalDateTime endTime = endDate.plusHours(Long.parseLong(endHrCB)).plusMinutes(Long.parseLong(endMinCB));
-
-			String description = descriptionField.getText();
 
 			Test conf = new Test(name, category, numberOfQuestions, numberOfAnswers, startTime, endTime, description,
 					ApplicationController.currentUser);

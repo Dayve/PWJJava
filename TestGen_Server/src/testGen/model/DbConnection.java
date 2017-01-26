@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.sql.*;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
@@ -293,10 +294,7 @@ public class DbConnection {
 	public boolean addTest(Test c) {
 		boolean succeeded = true;
 		String addConferenceProcedure = "{call add_test(?, ?, ?, ?, ?, ?, ?, ?)}";
-		
-		String insertStartTime = c.getStartTime().toString().replace('T', ' ');
-		String insertEndTime = c.getEndTime().toString().replace('T', ' ');
-		
+
 		try {
 			PreparedStatement pstmt = conn.prepareStatement(addConferenceProcedure);
 			pstmt.setInt(1, c.getFirstOrganizer().getId());
@@ -304,9 +302,12 @@ public class DbConnection {
 			pstmt.setString(3, c.getDescription());
 			pstmt.setInt(4, c.getnOfQuestions());
 			pstmt.setInt(5, c.getnOfAnswers());
+			
 			pstmt.setString(6, c.getCategory());
-			pstmt.setString(7, insertStartTime);
-			pstmt.setString(8, insertEndTime);
+			
+			pstmt.setDate(7, Date.valueOf(c.getStartTime().toLocalDate()));
+			pstmt.setDate(8, Date.valueOf(c.getEndTime().toLocalDate()));
+			
 			pstmt.executeUpdate();
 			pstmt.close();
 
