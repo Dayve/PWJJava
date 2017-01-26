@@ -33,13 +33,13 @@ public class CalendarController implements Controller {
 	}
 
 	public void refreshCalendarTable(TableView<Week> calendarTable, LocalDate calendarsDate,
-			ArrayList<Test> conferencesFeed, TabPane tp, ListView<Label> listOfSelectedDaysEvents) {
+			ArrayList<Test> testsFeed, TabPane tp, ListView<Label> listOfSelectedDaysEvents) {
 		calendarTable.getItems().clear();
 		calendarTable.getColumns().clear();
-		fillCalendarTable(calendarTable, conferencesFeed, tp, listOfSelectedDaysEvents);
+		fillCalendarTable(calendarTable, testsFeed, tp, listOfSelectedDaysEvents);
 	}
 
-	public void fillCalendarTable(TableView<Week> calendarTable, ArrayList<Test> conferencesFeed, TabPane tp,
+	public void fillCalendarTable(TableView<Week> calendarTable, ArrayList<Test> testsFeed, TabPane tp,
 			ListView<Label> listOfSelectedDaysEvents) {
 		// ColumnTitle are used only while displaying the content,
 		// PropertyValue however must be the same as variable names in Week
@@ -74,16 +74,16 @@ public class CalendarController implements Controller {
 
 						if (item != null || !emptyCell) {
 							if (!item.isEmpty()) {
-								ArrayList<Test> thisDayConferences = getConferencesAtDate(
-										selectedDate.withDayOfMonth(Integer.parseInt(item)), conferencesFeed);
-								if (!thisDayConferences.isEmpty()) {
-									for (Test c : thisDayConferences) {
+								ArrayList<Test> thisDayTests = getTestsAtDate(
+										selectedDate.withDayOfMonth(Integer.parseInt(item)), testsFeed);
+								if (!thisDayTests.isEmpty()) {
+									for (Test c : thisDayTests) {
 										// If you have some role in more than
-										// one conference in that day, style
+										// one test in that day, style
 										// will be overwritten
-										// (in thisDayConferences array order)
+										// (in thisDayTests array order)
 
-										if (ApplicationController.usersRoleOnConference(
+										if (ApplicationController.usersRoleOnTheTest(
 												ApplicationController.currentUser, c.getId()) != UsersRole.NONE) {
 											setStyle(defaultCellSettings + " " 
 											+ "-fx-font-weight: bold; -fx-background-color: #A5BEE9;");
@@ -109,11 +109,11 @@ public class CalendarController implements Controller {
 							if (!cellsContent.isEmpty()) {
 								selectedDate = selectedDate.withDayOfMonth(Integer.parseInt(cellsContent));
 
-								if (isAnyConferenceAtDate(selectedDate, conferencesFeed)) {
+								if (isAnyTestAtDate(selectedDate, testsFeed)) {
 									// Perform an action after a day with
-									// assigned conference was clicked:
-									fc.fillListViewWithSelectedDaysConferences(selectedDate,
-											conferencesFeed, tp, listOfSelectedDaysEvents, false, "...");
+									// assigned test was clicked:
+									fc.fillListViewWithSelectedDaysTests(selectedDate,
+											testsFeed, tp, listOfSelectedDaysEvents, false, "...");
 								} else {
 									listOfSelectedDaysEvents.getItems().clear();
 								}
@@ -231,11 +231,11 @@ public class CalendarController implements Controller {
 		return result;
 	}
 
-	private static ArrayList<Test> getConferencesAtDate(LocalDate givenDate,
-			ArrayList<Test> conferencesFeed) {
+	private static ArrayList<Test> getTestsAtDate(LocalDate givenDate,
+			ArrayList<Test> testsFeed) {
 		ArrayList<Test> results = new ArrayList<Test>();
 
-		for (Test d : conferencesFeed) {
+		for (Test d : testsFeed) {
 			if (d.getStartTime().toLocalDate().equals(givenDate)) {
 				results.add(d);
 			}
@@ -243,10 +243,10 @@ public class CalendarController implements Controller {
 		return results;
 	}
 
-	// Returns true if there is a conference (one or more) assigned to a
+	// Returns true if there is a test (one or more) assigned to a
 	// givenDate:
-	private static boolean isAnyConferenceAtDate(LocalDate givenDate, ArrayList<Test> conferencesFeed) {
-		for (Test d : conferencesFeed) {
+	private static boolean isAnyTestAtDate(LocalDate givenDate, ArrayList<Test> testsFeed) {
+		for (Test d : testsFeed) {
 			if (d.getStartTime().toLocalDate().equals(givenDate)) {
 				return true;
 			}

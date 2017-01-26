@@ -28,13 +28,13 @@ public class UploadFileController implements Controller {
 	private FileChooser fileChooser = new FileChooser();
 	private File chosenFile = null;
 	
-	private static Integer selectedConferenceId = new Integer(-1);
+	private static Integer selectedTestId = new Integer(-1);
 	
 	public static FileManagerController caller = null;
 	
 	
-	public static void setSelectedConferenceId(Integer givenId) {
-		selectedConferenceId = givenId;
+	public static void setSelectedTestId(Integer givenId) {
+		selectedTestId = givenId;
 	}
 	
 	
@@ -69,7 +69,7 @@ public class UploadFileController implements Controller {
 		examplePaper.createFromExistingFile(chosenFile.getAbsolutePath(), 
 				ApplicationController.currentUser.getName() + " " + ApplicationController.currentUser.getSurname(),
 				ApplicationController.currentUser.getId(),
-				selectedConferenceId, fileDescriptionBox.getText());
+				selectedTestId, fileDescriptionBox.getText());
 		
 		SocketEvent se = new SocketEvent("fileSentToServer", examplePaper.getWholeBufferAsByteArray());
 		NetworkConnection.sendSocketEvent(se);

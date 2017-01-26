@@ -39,12 +39,12 @@
             <RowConstraints vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <ComboBox fx:id="conferenceFeedCB" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#filterFeed">
+            <ComboBox fx:id="testFeedCB" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#filterFeed">
                <GridPane.margin>
                   <Insets bottom="5.0" left="4.0" right="2.0" top="5.0" />
                </GridPane.margin>
             </ComboBox>
-            <ComboBox fx:id="conferenceFeedNumberCB" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#filterFeed" GridPane.columnIndex="1">
+            <ComboBox fx:id="testFeedNumberCB" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#filterFeed" GridPane.columnIndex="1">
                <GridPane.margin>
                   <Insets bottom="5.0" left="2.0" right="2.0" top="5.0" />
                </GridPane.margin>
@@ -81,7 +81,7 @@
                   <Insets bottom="5.0" left="2.0" right="4.0" top="5.0" />
                </GridPane.margin>
             </Button>
-            <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#addConferenceBtn" text="Zaplanuj test" GridPane.columnIndex="2">
+            <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#addTestBtn" text="Zaplanuj test" GridPane.columnIndex="2">
                <font>
                   <Font size="13.0" />
                </font>
@@ -89,7 +89,7 @@
                   <Insets bottom="5.0" left="2.0" right="2.0" top="5.0" />
                </GridPane.margin>
             </Button>
-            <Button fx:id="joinLeaveManageConfBtn" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Weź udział">
+            <Button fx:id="joinLeaveManageTestBtn" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Weź udział">
                <font>
                   <Font size="13.0" />
                </font>
@@ -97,7 +97,7 @@
                   <Insets bottom="5.0" left="2.0" right="2.0" top="5.0" />
                </GridPane.margin>
             </Button>
-            <Button fx:id="removeConfBtn" disable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#removeConferenceBtn" text="Usuń konferencję" GridPane.columnIndex="3">
+            <Button fx:id="removeTestBtn" disable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#removeTestBtn" text="Usuń konferencję" GridPane.columnIndex="3">
                <font>
                   <Font size="13.0" />
                </font>
@@ -170,7 +170,7 @@
                </GridPane.margin></ComboBox>
          </children>
       </GridPane>
-      <ListView fx:id="conferenceFeedList" prefHeight="506.0" prefWidth="275.0" GridPane.rowIndex="3" GridPane.rowSpan="4">
+      <ListView fx:id="testFeedList" prefHeight="506.0" prefWidth="275.0" GridPane.rowIndex="3" GridPane.rowSpan="4">
          <GridPane.margin>
             <Insets bottom="5.0" left="4.0" right="2.0" top="2.0" />
          </GridPane.margin>

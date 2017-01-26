@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="confCreatorWindow" prefHeight="510.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="testGen.controller.TestCreatorController">
+<AnchorPane fx:id="testCreatorWindow" prefHeight="510.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="testGen.controller.TestCreatorController">
    <children>
       <Button layoutX="135.0" layoutY="450.0" mnemonicParsing="false" onAction="#closeWindowBtn" onKeyReleased="#closeBtnEnterKey" prefHeight="30.0" text="Zamknij okno">
          <font>
@@ -33,7 +33,7 @@
          <font>
             <Font size="13.0" />
          </font></TextArea>
-      <Button layoutX="285.0" layoutY="450.0" mnemonicParsing="false" onAction="#addConferenceBtn" onKeyReleased="#addConferenceBtnEnterKey" prefHeight="30.0" text="Dodaj">
+      <Button layoutX="285.0" layoutY="450.0" mnemonicParsing="false" onAction="#addTestBtn" onKeyReleased="#addTestBtnEnterKey" prefHeight="30.0" text="Dodaj">
          <font>
             <Font size="13.0" />
          </font></Button>

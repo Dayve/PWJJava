@@ -45,10 +45,10 @@ public class FeedController implements Controller {
 
 	public Parent mainApplicationWindow;
 
-	private Integer selectedConferenceId = null;
+	private Integer selectedTestId = null;
 	private ArrayList<Test> feed = new ArrayList<Test>();
-	private HashMap<Integer, HashMap<Integer, Post>> eachConferencesPosts = new HashMap<Integer, HashMap<Integer, Post>>();
-	private HashMap<Integer, Tab> openedTabsConferencesIds = new HashMap<Integer, Tab>();
+	private HashMap<Integer, HashMap<Integer, Post>> eachTestsPosts = new HashMap<Integer, HashMap<Integer, Post>>();
+	private HashMap<Integer, Tab> openedTabsTestsIds = new HashMap<Integer, Tab>();
 	private Integer selectedPostsId = null;
 	private Integer lastPostsId = null;
 	private MenuItem editMI = null;
@@ -70,14 +70,14 @@ public class FeedController implements Controller {
 		editMI.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent t) {
 				openModifyPostWindow(mainApplicationWindow, 
-						eachConferencesPosts.get(selectedConferenceId).get(selectedPostsId));
+						eachTestsPosts.get(selectedTestId).get(selectedPostsId));
 			}
 		});
 	}
 
 	public void refreshSelectedTab(TabPane tp) {
-		eachConferencesPosts.remove(selectedConferenceId);
-		Tab t = openedTabsConferencesIds.get(selectedConferenceId);
+		eachTestsPosts.remove(selectedTestId);
+		Tab t = openedTabsTestsIds.get(selectedTestId);
 		tp.getSelectionModel().select(null);
 		tp.getSelectionModel().select(t);
 	}
@@ -99,7 +99,7 @@ public class FeedController implements Controller {
 					if (me.getButton() == MouseButton.SECONDARY) {
 						selectedPostsId = Integer.parseInt(tf.getId());
 						User currUser = ApplicationController.currentUser;
-						UsersRole role = ApplicationController.usersRoleOnConference(currUser, selectedConferenceId);
+						UsersRole role = ApplicationController.usersRoleOnTheTest(currUser, selectedTestId);
 						/*
 						 * enable/disable context menu depending on user's role
 						 * organizer - enable edit & delete all posts
@@ -113,7 +113,7 @@ public class FeedController implements Controller {
 								break;
 							}
 							default: {
-								Integer postsAuthorsId = eachConferencesPosts.get(selectedConferenceId)
+								Integer postsAuthorsId = eachTestsPosts.get(selectedTestId)
 										.get(selectedPostsId).getAuthorsId();
 								// current user is author of the post
 								if (postsAuthorsId.equals(currUser.getId())) {
@@ -140,9 +140,9 @@ public class FeedController implements Controller {
 
 	public void clear() {
 		feed.clear();
-		openedTabsConferencesIds.clear();
-		eachConferencesPosts.clear();
-		selectedConferenceId = null;
+		openedTabsTestsIds.clear();
+		eachTestsPosts.clear();
+		selectedTestId = null;
 	}
 
 	public ArrayList<Test> getFeed() {
@@ -153,24 +153,24 @@ public class FeedController implements Controller {
 		this.feed = feed;
 	}
 
-	public Test getSelectedConference() {
-		if (selectedConferenceId != null) {
-			return feed.stream().filter(c -> c.getId() == selectedConferenceId).findFirst().get();
+	public Test getSelectedTest() {
+		if (selectedTestId != null) {
+			return feed.stream().filter(c -> c.getId() == selectedTestId).findFirst().get();
 		} else {
 			return null;
 		}
 	}
 
-	public Test getConference(int id) {
+	public Test getTest(int id) {
 		return feed.stream().filter(c -> c.getId() == id).findFirst().get();
 	}
 
-	public void setSelectedConferenceId(Integer selectedConferenceId) {
-		this.selectedConferenceId = selectedConferenceId;
+	public void setSelectedTestId(Integer selectedTestId) {
+		this.selectedTestId = selectedTestId;
 	}
 
-	public Integer getSelectedConferenceId() {
-		return selectedConferenceId;
+	public Integer getSelectedTestId() {
+		return selectedTestId;
 	}
 
 	private void sendRequestToRemovePost(Integer givenPostID) {
@@ -213,7 +213,7 @@ public class FeedController implements Controller {
 		return result.substring(0, result.length() - 1);
 	}
 
-	public ArrayList<Test> filterFeed(ArrayList<Test> feed, ConferenceFilter cf,
+	public ArrayList<Test> filterFeed(ArrayList<Test> feed, TestFilter cf,
 			String numberComboBoxValue) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 		LocalDateTime now = LocalDateTime.now();
@@ -244,36 +244,36 @@ public class FeedController implements Controller {
 			default:
 				break;
 		}
-		Collections.sort(filtered, Test.confDateComparator);
-		int howManyConferencesToShow = 0;
+		Collections.sort(filtered, Test.testsDateComparator);
+		int howManyTestsToShow = 0;
 
 		if (numberComboBoxValue.equals("..."))
-			howManyConferencesToShow = filtered.size();
+			howManyTestsToShow = filtered.size();
 		else {
-			howManyConferencesToShow = (filtered.size() < Integer.parseInt(numberComboBoxValue) ? filtered.size()
+			howManyTestsToShow = (filtered.size() < Integer.parseInt(numberComboBoxValue) ? filtered.size()
 					: Integer.parseInt(numberComboBoxValue));
 		}
 
 		return new ArrayList<Test>(
-				filtered.subList(0, howManyConferencesToShow > 0 ? howManyConferencesToShow : 0));
+				filtered.subList(0, howManyTestsToShow > 0 ? howManyTestsToShow : 0));
 	}
 
-	public void fillListViewWithSelectedDaysConferences(LocalDate selectedDate, ArrayList<Test> feed, TabPane tp,
+	public void fillListViewWithSelectedDaysTests(LocalDate selectedDate, ArrayList<Test> feed, TabPane tp,
 			ListView<Label> listOfSelectedDaysEvents, boolean showDate, String numberCBvalue) {
-		ArrayList<Test> selectedDayConferences = new ArrayList<Test>();
+		ArrayList<Test> selectedDayTests = new ArrayList<Test>();
 		listOfSelectedDaysEvents.getItems().clear();
 		for (Test c : feed) {
 			if (c.getStartTime().toLocalDate().equals(selectedDate)) {
-				selectedDayConferences.add(c);
+				selectedDayTests.add(c);
 			}
 		}
-		if (selectedDayConferences != null) {
-			fillListWithLabels(listOfSelectedDaysEvents, selectedDayConferences, tp, ConferenceFilter.ALL,
+		if (selectedDayTests != null) {
+			fillListWithLabels(listOfSelectedDaysEvents, selectedDayTests, tp, TestFilter.ALL,
 					ApplicationController.CHAR_LIMIT_IN_TITLEPANE, showDate, numberCBvalue);
 		}
 	}
 
-	public void fillListWithLabels(ListView<Label> lv, ArrayList<Test> cs, TabPane tp, ConferenceFilter cf,
+	public void fillListWithLabels(ListView<Label> lv, ArrayList<Test> cs, TabPane tp, TestFilter cf,
 			int charLimit, boolean showDate, String numberCBvalue) {
 		ArrayList<Test> filtered = filterFeed(cs, cf, numberCBvalue);
 		ObservableList<Label> ol = FXCollections.observableArrayList();
@@ -293,23 +293,23 @@ public class FeedController implements Controller {
 			label.setPrefWidth(lv.getWidth());
 			label.setOnMouseClicked(new EventHandler<MouseEvent>() {
 				public void handle(MouseEvent t) {
-					setSelectedConferenceId(currId);
-					openConferenceTab(tp, cs);
+					setSelectedTestId(currId);
+					openTestTab(tp, cs);
 				}
 			});
 
-			String myConferencesStyle = "-fx-font-weight: bold;";
-			switch (ApplicationController.usersRoleOnConference(ApplicationController.currentUser, c.getId())) {
+			String myTestsStyle = "-fx-font-weight: bold;";
+			switch (ApplicationController.usersRoleOnTheTest(ApplicationController.currentUser, c.getId())) {
 				case PARTICIPANT:
-					label.setStyle(myConferencesStyle);
+					label.setStyle(myTestsStyle);
 					break;
 
 				case ORGANIZER:
-					label.setStyle(myConferencesStyle + "-fx-text-fill: #13366C;");
+					label.setStyle(myTestsStyle + "-fx-text-fill: #13366C;");
 					break;
 
 				case PENDING:
-					label.setStyle(myConferencesStyle + "-fx-text-fill: #A7A7A7;");
+					label.setStyle(myTestsStyle + "-fx-text-fill: #A7A7A7;");
 					break;
 
 				case NONE:
@@ -321,7 +321,7 @@ public class FeedController implements Controller {
 		lv.setItems(ol);
 	}
 
-	public void resizeSelectedConferenceTab(TabPane tp, Integer newHeight) {
+	public void resizeSelectedTestTab(TabPane tp, Integer newHeight) {
 		Tab t = tp.getSelectionModel().getSelectedItem();
 		if (t != null) {
 			VBox vb = (VBox) t.getContent();
@@ -333,14 +333,14 @@ public class FeedController implements Controller {
 		}
 	}
 
-	@SuppressWarnings("unchecked") private ArrayList<Post> reqForumsFeed(Integer usersId, Integer conferencesId, ListView<TextFlow> lv) {
+	@SuppressWarnings("unchecked") private ArrayList<Post> reqForumsFeed(Integer usersId, Integer testsId, ListView<TextFlow> lv) {
 		ArrayList<Post> forumsFeed = null;
 		ArrayList<Post> postsDifferentFromCurrent = new ArrayList<Post>();
-		ArrayList<Integer> userIdConferenceId = new ArrayList<Integer>();
-		HashMap<Integer, Post> thisConfPosts = eachConferencesPosts.get(selectedConferenceId);
-		userIdConferenceId.add(usersId);
-		userIdConferenceId.add(conferencesId);
-		SocketEvent se = new SocketEvent("reqConferencesPosts", userIdConferenceId);
+		ArrayList<Integer> userIdTestId = new ArrayList<Integer>();
+		HashMap<Integer, Post> thisTestPosts = eachTestsPosts.get(selectedTestId);
+		userIdTestId.add(usersId);
+		userIdTestId.add(testsId);
+		SocketEvent se = new SocketEvent("reqTestsPosts", userIdTestId);
 
 		NetworkConnection.sendSocketEvent(se);
 		SocketEvent res = NetworkConnection.rcvSocketEvent("sendForumFeedSucceeded", "sendForumFeedFailed");
@@ -354,25 +354,25 @@ public class FeedController implements Controller {
 			for (int j = forumsFeed.size() - 1; j >= 0; j--) {
 				Post p = forumsFeed.get(j);
 
-				if (thisConfPosts.containsKey(p.getPostsId())) {
-					if (!p.getContent().equals(thisConfPosts.get(p.getPostsId()).getContent())) {
+				if (thisTestPosts.containsKey(p.getPostsId())) {
+					if (!p.getContent().equals(thisTestPosts.get(p.getPostsId()).getContent())) {
 						postsDifferentFromCurrent.add(p);
 						// replace a post with the one with updated content
-						thisConfPosts.clear();
+						thisTestPosts.clear();
 						lv.getItems().clear();
-						return reqForumsFeed(usersId, conferencesId, lv);
-//						thisConfPosts.remove(p.getPostsId());
-//						thisConfPosts.put(p.getPostsId(), p);
+						return reqForumsFeed(usersId, testsId, lv);
+//						thisTestPosts.remove(p.getPostsId());
+//						thisTestPosts.put(p.getPostsId(), p);
 					}
 				} else {
 					postsDifferentFromCurrent.add(p);
-					thisConfPosts.put(p.getPostsId(), p);
+					thisTestPosts.put(p.getPostsId(), p);
 				}
 			}
-			if(thisConfPosts.size() > forumsFeed.size() + postsDifferentFromCurrent.size()) {
-				thisConfPosts.clear();
+			if(thisTestPosts.size() > forumsFeed.size() + postsDifferentFromCurrent.size()) {
+				thisTestPosts.clear();
 				lv.getItems().clear();
-				return reqForumsFeed(usersId, conferencesId, lv);
+				return reqForumsFeed(usersId, testsId, lv);
 			}
 		}
 		return postsDifferentFromCurrent;
@@ -382,11 +382,11 @@ public class FeedController implements Controller {
 		ArrayList<Post> newPosts = reqForumsFeed(ApplicationController.currentUser.getId(), c.getId(), lv);
 		if (newPosts.size() > 0) {
 			ObservableList<TextFlow> existingPosts = lv.getItems();
-			ArrayList<User> selectedConfUsersList = new ArrayList<User>();
-			selectedConfUsersList.addAll(c.getOrganizers());
-			selectedConfUsersList.addAll(c.getParticipantsList());
+			ArrayList<User> selectedTestUsersList = new ArrayList<User>();
+			selectedTestUsersList.addAll(c.getOrganizers());
+			selectedTestUsersList.addAll(c.getParticipantsList());
 			Map<Integer, User> usersById = new HashMap<Integer, User>();
-			for (User u : selectedConfUsersList) {
+			for (User u : selectedTestUsersList) {
 				usersById.put(u.getId(), u);
 			}
 			// Styles:
@@ -437,13 +437,13 @@ public class FeedController implements Controller {
 		}
 	}
 
-	private void updateConfDescriptionScrollPane(ScrollPane scPane, Test c) {
+	private void updateTestDescriptionScrollPane(ScrollPane scPane, Test c) {
 		// TextFlow is built from many Text objects (which can have different
 		// styles)
 		TextFlow flow = new TextFlow();
 
 		// e.g. "Tytuł", "Organizatorzy"
-		ArrayList<Text> confDescriptionSections = new ArrayList<Text>();
+		ArrayList<Text> testDescriptionSections = new ArrayList<Text>();
 
 		// Styles:
 
@@ -454,14 +454,14 @@ public class FeedController implements Controller {
 				sectionContentStyle = new String();
 
 		String[] sectionNames = new String[] { 
-			"Kategoria:", 
+			"Kategoria: ", 
 			"\n\nOrganizatorzy:\n", 
-			"\n\nCzas rozpoczęcia:\n",
+			"\nCzas rozpoczęcia:\n",
 			"\n\nCzas zakończenia:\n", 
-			"\n\nIlość pytań:\n", 
-			"\n\nIlość możliwych odpowiedzi:\n", 
+			"\n\nIlość pytań: ", 
+			"\n\nIlość możliwych odpowiedzi: ", 
 			"\n\nOpis:\n",
-			"\n\nUczestnicy: (wg roli)\n"
+			"\n\nUczestnicy:\n"
 		};
 
 		String[] sectionContents = new String[] {
@@ -478,55 +478,55 @@ public class FeedController implements Controller {
 			// Label/section name:
 			Text currentSectionTitle = new Text(sectionNames[i]);
 			currentSectionTitle.setStyle(sectionNameStyle);
-			confDescriptionSections.add(currentSectionTitle);
+			testDescriptionSections.add(currentSectionTitle);
 			
 			// Content:
 			Text currentSectionContent = new Text(sectionContents[i]);
 			currentSectionContent.setStyle(sectionContentStyle);
-			confDescriptionSections.add(currentSectionContent);
+			testDescriptionSections.add(currentSectionContent);
 		}
 
-		flow.getChildren().addAll(confDescriptionSections);
+		flow.getChildren().addAll(testDescriptionSections);
 		flow.setPrefWidth(scPane.getWidth());
 		flow.setStyle("-fx-padding: 10 10 10 10;");
 		scPane.setContent(flow);
 	}
 
 	@SuppressWarnings("unchecked")
-	public void refreshConferenceTab(TabPane tp, Integer tabsId, ArrayList<Test> confPool) {
+	public void refreshTestTab(TabPane tp, Integer tabsId, ArrayList<Test> testPool) {
 		Test c = null;
 		// tabsId could be null if ApplicationController tried to refresh forum
 		// but there weren't any tabs selected
 		if (tabsId == null) {
 			return;
 		}
-		for (Test fromPool : confPool) {
+		for (Test fromPool : testPool) {
 			if (fromPool.getId() == tabsId) {
 				c = fromPool;
 				break;
 			}
 		}
 		if (c == null) {
-			// if there's no such conference found remove its tab
-			tp.getTabs().remove(openedTabsConferencesIds.get(tabsId));
-			openedTabsConferencesIds.remove(tabsId);
-			eachConferencesPosts.remove(tabsId);
+			// if there's no such test found remove its tab
+			tp.getTabs().remove(openedTabsTestsIds.get(tabsId));
+			openedTabsTestsIds.remove(tabsId);
+			eachTestsPosts.remove(tabsId);
 		} else {
-			if(openedTabsConferencesIds.containsKey(tabsId) && 
-					!eachConferencesPosts.containsKey(tabsId)) {
-				eachConferencesPosts.put(tabsId, new HashMap<Integer, Post>());
+			if(openedTabsTestsIds.containsKey(tabsId) && 
+					!eachTestsPosts.containsKey(tabsId)) {
+				eachTestsPosts.put(tabsId, new HashMap<Integer, Post>());
 			}
 			ScrollPane confInfoPane = null;
-			VBox vb = (VBox) openedTabsConferencesIds.get(tabsId).getContent();
+			VBox vb = (VBox) openedTabsTestsIds.get(tabsId).getContent();
 			if (vb.getChildren().size() == 0) {
 				confInfoPane = new ScrollPane();
 				vb.getChildren().add(confInfoPane);
 			} else {
 				confInfoPane = (ScrollPane) vb.getChildren().get(0);
 			}
-			updateConfDescriptionScrollPane(confInfoPane, c);
+			updateTestDescriptionScrollPane(confInfoPane, c);
 
-			switch (ApplicationController.usersRoleOnConference(ApplicationController.currentUser, c.getId())) {
+			switch (ApplicationController.usersRoleOnTheTest(ApplicationController.currentUser, c.getId())) {
 				case PARTICIPANT:
 				case ORGANIZER: {
 					ListView<TextFlow> forumsListView = null;
@@ -568,44 +568,44 @@ public class FeedController implements Controller {
 		}
 	}
 
-	public void refreshConferenceTabs(TabPane tp, ArrayList<Test> confPool) {
+	public void refreshTestTabs(TabPane tp, ArrayList<Test> confPool) {
 		try {
 			for (Iterator<Tab> iterator = tp.getTabs().iterator(); iterator.hasNext();) {
 				Tab t = iterator.next();
-				refreshConferenceTab(tp, Integer.parseInt(t.getId()), confPool);
+				refreshTestTab(tp, Integer.parseInt(t.getId()), confPool);
 			}
 		} catch (ConcurrentModificationException e) {
 			// happens when there is only one tab opened
-			// and organizer removes their conference
+			// and organizer removes their test
 			// so the tab closes and leaves nothing opened
-			setSelectedConferenceId(null);
+			setSelectedTestId(null);
 		}
 	}
 
-	public void openConferenceTab(TabPane tp, ArrayList<Test> confPool) {
-		Integer currId = getSelectedConferenceId();
-		if (!eachConferencesPosts.containsKey(currId)) {
-			eachConferencesPosts.put(currId, new HashMap<Integer, Post>());
-			eachConferencesPosts.get(currId).clear();
+	public void openTestTab(TabPane tp, ArrayList<Test> confPool) {
+		Integer currId = getSelectedTestId();
+		if (!eachTestsPosts.containsKey(currId)) {
+			eachTestsPosts.put(currId, new HashMap<Integer, Post>());
+			eachTestsPosts.get(currId).clear();
 			for (Test c : confPool) {
 				if (c.getId() == currId) {
 					Tab tab = new Tab();
 					tab.setOnClosed(new EventHandler<Event>() {
 						@Override public void handle(Event event) {
 							Integer id = Integer.parseInt(tab.getId());
-							openedTabsConferencesIds.remove(id);
-							eachConferencesPosts.remove(id);
+							openedTabsTestsIds.remove(id);
+							eachTestsPosts.remove(id);
 						}
 					});
 					tab.setText(c.getName());
 					tab.setId(currId.toString());
 					VBox vbox = new VBox();
 					ScrollPane descriptionPane = new ScrollPane();
-					updateConfDescriptionScrollPane(descriptionPane, c);
+					updateTestDescriptionScrollPane(descriptionPane, c);
 					ListView<TextFlow> forumsListView;
 					double paneSize = tp.getHeight();
 					UsersRole currUsersRole = ApplicationController
-							.usersRoleOnConference(ApplicationController.currentUser, c.getId());
+							.usersRoleOnTheTest(ApplicationController.currentUser, c.getId());
 					if (currUsersRole != UsersRole.NONE && currUsersRole != UsersRole.PENDING) {
 						paneSize /= 2;
 						forumsListView = new ListView<TextFlow>();
@@ -627,14 +627,14 @@ public class FeedController implements Controller {
 
 					tab.setContent(vbox);
 					tp.getTabs().add(tab);
-					openedTabsConferencesIds.put(currId, tab);
+					openedTabsTestsIds.put(currId, tab);
 					tp.getSelectionModel().select(tab);
 					break;
 				}
 			}
 		} else {
-			tp.getSelectionModel().select(openedTabsConferencesIds.get(currId));
-			VBox vb = (VBox) openedTabsConferencesIds.get(selectedConferenceId).getContent();
+			tp.getSelectionModel().select(openedTabsTestsIds.get(currId));
+			VBox vb = (VBox) openedTabsTestsIds.get(selectedTestId).getContent();
 			if (vb.getChildren().size() > 1) {
 				@SuppressWarnings("unchecked")
 				ListView<TextFlow> forumsListView = (ListView<TextFlow>) vb.getChildren().get(1);

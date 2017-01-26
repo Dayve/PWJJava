@@ -12,7 +12,7 @@ public class FileInfo implements Serializable {
 	private String description;
 	private String authorsName;
 	private int authorsId;
-	private int targetConferenceId;
+	private int targetTestId;
 	
 	public FileInfo() {
 		this.filename = new String();
@@ -21,20 +21,20 @@ public class FileInfo implements Serializable {
 		
 		this.fileID = new Integer(-1);
 		this.authorsId = -1;
-		this.targetConferenceId = -1;
+		this.targetTestId = -1;
 	}
 	
-	public FileInfo(String filename, String description, String authorsName, int authorsId, int targetConferenceId) {
+	public FileInfo(String filename, String description, String authorsName, int authorsId, int targetTestId) {
 		this.fileID = new Integer(-1);
 		this.filename = filename;
 		this.description = description;
 		this.authorsName = authorsName;
 		this.authorsId = authorsId;
-		this.targetConferenceId = targetConferenceId;
+		this.targetTestId = targetTestId;
 	}
 	
-	public FileInfo(int ID, String filename, String description, String authorsName, int authorsId, int targetConferenceId) {
-		this(filename, description, authorsName, authorsId, targetConferenceId);
+	public FileInfo(int ID, String filename, String description, String authorsName, int authorsId, int targetTestId) {
+		this(filename, description, authorsName, authorsId, targetTestId);
 		this.fileID = new Integer(ID);
 	}
 
@@ -70,17 +70,9 @@ public class FileInfo implements Serializable {
 		return authorsId;
 	}
 
-	public int getTargetConferenceId() {
-		return targetConferenceId;
-	}
-
-	public void setTargetConferenceId(int targetConferenceId) {
-		this.targetConferenceId = targetConferenceId;
-	}
-	
 	@Override
 	public String toString() {
 		return "FileInfo [filename=" + filename + ", description=" + description + ", authorsName=" + authorsName
-				+ ", targetConferenceId=" + targetConferenceId + "]";
+				+ ", targetTestId=" + targetTestId + "]";
 	}
 }

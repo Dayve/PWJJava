@@ -39,12 +39,12 @@
           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <Label alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Pozostało:">
+            <Label alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Pozostało:" GridPane.columnSpan="2">
                <font>
                   <Font size="18.0" />
                </font>
             </Label>
-            <Label fx:id="timeLeftLabel" GridPane.columnIndex="1">
+            <Label fx:id="timeLeftLabel" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" GridPane.columnSpan="2" GridPane.rowIndex="1">
                <font>
                   <Font size="20.0" />
                </font>
@@ -65,10 +65,6 @@
                   <Font size="14.0" />
                </font>
             </Button>
-            <Label GridPane.columnSpan="2" GridPane.rowIndex="1">
-               <font>
-                  <Font size="20.0" />
-               </font></Label>
          </children>
       </GridPane>
       <FlowPane fx:id="answersFlowPane" GridPane.rowIndex="2" GridPane.rowSpan="2">

@@ -38,13 +38,13 @@ public class FileManagerController implements Controller {
 
 	// Those FileInfo objects contain fileIDs, as opposed to those created from
 	// local files
-	private static ArrayList<FileInfo> filesForThisConference = new ArrayList<FileInfo>();
+	private static ArrayList<FileInfo> filesForThisTest = new ArrayList<FileInfo>();
 
-	public Test browsedConference = null;
+	public Test browsedTest = null;
 
 	private void setButtonsPriviledges() {
-		switch (ApplicationController.usersRoleOnConference(ApplicationController.currentUser,
-				browsedConference.getId())) {
+		switch (ApplicationController.usersRoleOnTheTest(ApplicationController.currentUser,
+				browsedTest.getId())) {
 			case ORGANIZER: {
 				removeFileButton.setDisable(false);
 				addNewFileButton.setDisable(false);
@@ -70,7 +70,7 @@ public class FileManagerController implements Controller {
 	}
 
 	@FXML public void initialize() {
-		browsedConference = fc.getSelectedConference();
+		browsedTest = fc.getSelectedTest();
 
 		fetchCurrentlyStoredFiles(); // Calls the refresh function
 
@@ -128,7 +128,7 @@ public class FileManagerController implements Controller {
 	private void filterTable(String filter) {
 		ArrayList<FileInfo> filteredList = new ArrayList<FileInfo>();
 
-		for (FileInfo fInfo : filesForThisConference) {
+		for (FileInfo fInfo : filesForThisTest) {
 			if (fInfo.getAuthorsName().toLowerCase().contains(filter.toLowerCase())
 					|| fInfo.getDescription().toLowerCase().contains(filter.toLowerCase())
 					|| fInfo.getFilename().toLowerCase().contains(filter.toLowerCase())) {
@@ -185,7 +185,7 @@ public class FileManagerController implements Controller {
 
 	@SuppressWarnings("unchecked")
 	public void fetchCurrentlyStoredFiles() {
-		SocketEvent se = new SocketEvent("reqestFileList", browsedConference);
+		SocketEvent se = new SocketEvent("reqestFileList", browsedTest);
 		NetworkConnection.sendSocketEvent(se);
 
 		SocketEvent res = NetworkConnection.rcvSocketEvent("fileListFetched", "fileListFetchError");
@@ -198,8 +198,8 @@ public class FileManagerController implements Controller {
 				}
 			});
 		} else {
-			filesForThisConference = (ArrayList<FileInfo>) res.getObject(ArrayList.class);
-			refreshList(filesForThisConference);
+			filesForThisTest = (ArrayList<FileInfo>) res.getObject(ArrayList.class);
+			refreshList(filesForThisTest);
 		}
 		
 	}

@@ -3,7 +3,7 @@ package testGen.model;
 import java.time.LocalDateTime;
 
 public interface Validator {
-	default public int isConferenceValid(Test c) {
+	default public int isTestValid(Test c) {
 		int retCode = 0;
 
 		String name = c.getName(), category = c.getCategory();

@@ -25,25 +25,25 @@ import testGen.model.SocketEvent;
 import testGen.model.User;
 import testGen.model.User.UsersRole;
 
-public class ConferenceManagerController implements Controller {
+public class TestManagerController implements Controller {
 
-	@FXML Parent confManagerWindow;
+	@FXML Parent testManagerWindow;
 	@FXML private TextField searchUserField;
 	@FXML private ListView<Label> usersLV;
 
 	@FXML private ComboBox<String> userOperationCB;
 	@FXML private ComboBox<String> fileOperationCB;
 
-	private int selectedConferenceId;
-	private Test selectedConference;
+	private int selectedTestId;
+	private Test selectedTest;
 	private HashMap<Integer, User> selectedUsers = new HashMap<Integer, User>();
 	private HashMap<Integer, User> deselectedUsers = new HashMap<Integer, User>();
 
 	private String message;
 	private boolean notAnAdminAnymore = false;
 
-	private void setSelectedConference(Test c) {
-		selectedConference = c;
+	private void setSelectedTest(Test c) {
+		selectedTest = c;
 	}
 
 	public void refresh() {
@@ -94,20 +94,20 @@ public class ConferenceManagerController implements Controller {
 	public void fillUsersList() {
 		ObservableList<Label> ol = FXCollections.observableArrayList();
 		usersLV.getItems().clear();
-		ArrayList<ArrayList<User>> selectedConferencesUsersGroups = new ArrayList<ArrayList<User>>();
-		selectedConferencesUsersGroups.add(selectedConference.getOrganizers());
-		selectedConferencesUsersGroups.add(selectedConference.getParticipants());
-		selectedConferencesUsersGroups.add(selectedConference.getPending());
+		ArrayList<ArrayList<User>> selectedTestsUsersGroups = new ArrayList<ArrayList<User>>();
+		selectedTestsUsersGroups.add(selectedTest.getOrganizers());
+		selectedTestsUsersGroups.add(selectedTest.getParticipants());
+		selectedTestsUsersGroups.add(selectedTest.getPending());
 		String[] roles = { "organizator", "uczestnik", "oczekujący" };
-		for (int i = 0; i < selectedConferencesUsersGroups.size(); i++) {
-			addUserLabelsWithRoles(ol, selectedConferencesUsersGroups.get(i), roles[i]);
+		for (int i = 0; i < selectedTestsUsersGroups.size(); i++) {
+			addUserLabelsWithRoles(ol, selectedTestsUsersGroups.get(i), roles[i]);
 		}
 		usersLV.setItems(ol);
 	}
 
 	@FXML public void initialize() {
-		selectedConferenceId = fc.getSelectedConferenceId();
-		selectedConference = fc.getSelectedConference();
+		selectedTestId = fc.getSelectedTestId();
+		selectedTest = fc.getSelectedTest();
 
 		setupFilterCBs();
 		fillUsersList();
@@ -142,7 +142,7 @@ public class ConferenceManagerController implements Controller {
 	}
 
 	private boolean willThereBeAnyOrganizerLeft() {
-		ArrayList<User> organizers = selectedConference.getOrganizers();
+		ArrayList<User> organizers = selectedTest.getOrganizers();
 		for (User u : deselectedUsers.values()) {
 			if (organizers.contains(u)) {
 				return true; // if there is any deselected organizer, break
@@ -177,11 +177,11 @@ public class ConferenceManagerController implements Controller {
 				break;
 		}
 
-		if (ApplicationController.usersRoleOnConference(ApplicationController.currentUser,
-				selectedConferenceId) == UsersRole.ORGANIZER) {
+		if (ApplicationController.usersRoleOnTheTest(ApplicationController.currentUser,
+				selectedTestId) == UsersRole.ORGANIZER) {
 			if (targetRole != null && usersIds.size() > 0) {
 				if (targetRole == UsersRole.ORGANIZER || willThereBeAnyOrganizerLeft()) {
-					SocketEvent se = new SocketEvent("reqSetRole", targetRole, selectedConferenceId, usersIds);
+					SocketEvent se = new SocketEvent("reqSetRole", targetRole, selectedTestId, usersIds);
 					NetworkConnection.sendSocketEvent(se);
 
 					SocketEvent res = NetworkConnection.rcvSocketEvent("setRoleSucceeded", 
@@ -189,9 +189,9 @@ public class ConferenceManagerController implements Controller {
 					String eventName = res.getName();
 
 					if (eventName.equals("setRoleSucceeded") || eventName.equals("expellSucceeded")) {
-						setSelectedConference(res.getObject(Test.class));
+						setSelectedTest(res.getObject(Test.class));
 						message = "Pomyślnie wprowadzono zmiany.";
-						ApplicationController.makeRequest(RequestType.UPDATE_CONFERENCE_FEED);
+						ApplicationController.makeRequest(RequestType.UPDATE_TEST_FEED);
 					} else if (eventName.equals("setRoleFailed")) {
 						message = "Nie udało się wprowadzić zmian.";
 					} else {
@@ -216,9 +216,9 @@ public class ConferenceManagerController implements Controller {
 					notAnAdminAnymore = true;
 				}
 				refresh();
-				openDialogBox(confManagerWindow, message, true);
+				openDialogBox(testManagerWindow, message, true);
 				if (notAnAdminAnymore) {
-					Stage st = (Stage) confManagerWindow.getScene().getWindow();
+					Stage st = (Stage) testManagerWindow.getScene().getWindow();
 					st.close();
 				}
 			}
@@ -226,12 +226,12 @@ public class ConferenceManagerController implements Controller {
 	}
 
 	@FXML public void closeWindowBtn(ActionEvent event) {
-		closeWindow(confManagerWindow);
+		closeWindow(testManagerWindow);
 	}
 
 	@FXML private void closeBtnEnterKey(KeyEvent event) {
 		if (event.getCode() == KeyCode.ENTER) {
-			closeWindow(confManagerWindow);
+			closeWindow(testManagerWindow);
 		}
 	}
 }

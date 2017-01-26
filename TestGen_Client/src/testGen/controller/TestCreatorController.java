@@ -25,7 +25,7 @@ import testGen.model.User;
 
 public class TestCreatorController implements Controller {
 
-	@FXML Parent confCreatorWindow;
+	@FXML Parent testCreatorWindow;
 	
 	@FXML private TextField nameField;
 	@FXML private TextField numberOfQuestionsBox;
@@ -44,7 +44,7 @@ public class TestCreatorController implements Controller {
 	@FXML private TextArea descriptionField;
 		
 	// Date which will be used to initialize the DatePicker:
-	private static LocalDate conferenceDestinedDay = LocalDate.now();
+	private static LocalDate testDestinedDay = LocalDate.now();
 	private String message;
 
 	@FXML public void initialize() {
@@ -57,15 +57,15 @@ public class TestCreatorController implements Controller {
 		endHr.getItems().addAll(hours);
 		startMin.getItems().addAll(minutes);
 		endMin.getItems().addAll(minutes);
-		startDateField.setValue(conferenceDestinedDay);
-		endDateField.setValue(conferenceDestinedDay);
+		startDateField.setValue(testDestinedDay);
+		endDateField.setValue(testDestinedDay);
 		
 		new Thread(() -> fetchAllCategoriesList()).start();
 	}
 	
 	// This function is called when a day is clicked (from CalendarController):
 	public static void setChosenDay(LocalDate when) {
-		conferenceDestinedDay = when;
+		testDestinedDay = when;
 	}
 	
 	private void fetchAllCategoriesList() {
@@ -90,7 +90,7 @@ public class TestCreatorController implements Controller {
 		}
 	}
 
-	@FXML public void reqAddConference() {
+	@FXML public void reqAddTest() {
 		String name = nameField.getText();
 		Integer numberOfQuestions = Integer.parseInt(numberOfQuestionsBox.getText());
 		Integer numberOfAnswers = Integer.parseInt(numberOfAnswersBox.getText());
@@ -123,7 +123,7 @@ public class TestCreatorController implements Controller {
 
 			if (eventName.equals("addTestSucceeded")) {
 				message = "Dodano konferencję.";
-				ApplicationController.makeRequest(RequestType.UPDATE_CONFERENCE_FEED);
+				ApplicationController.makeRequest(RequestType.UPDATE_TEST_FEED);
 			}
 			else if (eventName.equals("addTestFailed")) {
 				message = res.getObject(String.class);
@@ -136,29 +136,29 @@ public class TestCreatorController implements Controller {
 		}
 		Platform.runLater(new Runnable() {
 			@Override public void run() {
-				openDialogBox(confCreatorWindow, message, true);
+				openDialogBox(testCreatorWindow, message, true);
 			}
 		});
 
 	}
 
-	@FXML public void addConferenceBtn() {
-		new Thread(() -> reqAddConference()).start();
+	@FXML public void addTestBtn() {
+		new Thread(() -> reqAddTest()).start();
 	}
 
-	@FXML private void addConferenceBtnEnterKey(KeyEvent event) {
+	@FXML private void addTestBtnEnterKey(KeyEvent event) {
 		if (event.getCode() == KeyCode.ENTER) {
-			new Thread(() -> reqAddConference()).start();
+			new Thread(() -> reqAddTest()).start();
 		}
 	}
 
 	@FXML public void closeWindowBtn(ActionEvent event) {
-		closeWindow(confCreatorWindow);
+		closeWindow(testCreatorWindow);
 	}
 
 	@FXML private void closeBtnEnterKey(KeyEvent event) {
 		if (event.getCode() == KeyCode.ENTER) {
-			closeWindow(confCreatorWindow);
+			closeWindow(testCreatorWindow);
 		}
 	}
 

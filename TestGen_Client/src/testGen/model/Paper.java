@@ -120,9 +120,9 @@ public class Paper implements Serializable {
 	}
 	
 	
-	public void createFromExistingFile(String pathWithFilename, String authorsName, int authorsId, int givenConferenceId, String desc) {
+	public void createFromExistingFile(String pathWithFilename, String authorsName, int authorsId, int givenTestId, String desc) {
 		File file = new File(pathWithFilename);		
-		fileInfo = new FileInfo(file.getName(), desc, authorsName, authorsId, givenConferenceId);
+		fileInfo = new FileInfo(file.getName(), desc, authorsName, authorsId, givenTestId);
 
 		byte[] fileInfoAsBytes = null;
 		

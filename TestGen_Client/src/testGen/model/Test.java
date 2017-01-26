@@ -199,7 +199,7 @@ public class Test implements Serializable {
 		return ret;
 	}
 
-	public static Comparator<Test> confDateComparator = new Comparator<Test>() {
+	public static Comparator<Test> testsDateComparator = new Comparator<Test>() {
 		public int compare(Test c1, Test c2) {
 			return c2.getStartTime().compareTo(c1.getStartTime());
 		}

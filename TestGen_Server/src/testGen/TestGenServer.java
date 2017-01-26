@@ -157,22 +157,19 @@ public class TestGenServer implements Runnable {
 
 		private void handleAddTest(Test newTest) {
 
-			int validationCode = isConferenceValid(newTest);
+			int validationCode = isTestValid(newTest);
 			String socketEvtName = "addTestFailed";
 			String message = "";
 			SocketEvent se = null;
 
-			message = interpretValidationCode(validationCode, "Dodano konferencję.",
+			message = interpretValidationCode(validationCode, "Dodano test.",
 					"Podaj czas rozpoczęcia późniejszy niż obecny o co najmniej godzinę.",
-					"Konferencja nie może kończyć się wcześniej niż się zaczyna.",
-					"Nazwa nie może być krótsza niż 3 i dłuższa niż 200 znaków.",
-					"Temat nie może być krótszy niż 3 i dłuższy niż 200 znaków.",
-					"Zawartość pola \"Miejsce\" nie może być krótsza niż 3 i dłuższy niż 250 znaków.",
-					"Pole \"Plan\" nie może być puste.");
+					"Test nie może kończyć się wcześniej niż się zaczyna.",
+					"Nazwa nie może być krótsza niż 3 i dłuższa niż 200 znaków.");
 
-			if (validationCode == 0) { // if conference data is valid
+			if (validationCode == 0) { // if test data is valid
 				if (!dbConn.addTest(newTest)) {
-					message = "Nie udało się dodać konferencji. Błąd serwera.";
+					message = "Nie udało się dodać testu. Błąd serwera.";
 				} else {
 					socketEvtName = "addTestSucceeded";
 				}
@@ -187,12 +184,12 @@ public class TestGenServer implements Runnable {
 			}
 		}
 
-		private void handleJoinConference(int userId, int conferenceId) {
+		private void handleJoinTest(int userId, int testId) {
 			SocketEvent se = null;
-			if (!dbConn.addParticipant(userId, conferenceId)) {
-				se = new SocketEvent("joinConferenceFailed");
+			if (!dbConn.addParticipant(userId, testId)) {
+				se = new SocketEvent("joinTestFailed");
 			} else {
-				se = new SocketEvent("joinConferenceSucceeded");
+				se = new SocketEvent("joinTestSucceeded");
 			}
 
 			try {
@@ -202,12 +199,12 @@ public class TestGenServer implements Runnable {
 			}
 		}
 
-		private void handleLeaveConference(int userId, int conferenceId) {
+		private void handleLeaveTest(int userId, int testId) {
 			SocketEvent se = null;
-			if (!dbConn.removeParticipant(userId, conferenceId)) {
-				se = new SocketEvent("leaveConferenceFailed");
+			if (!dbConn.removeParticipant(userId, testId)) {
+				se = new SocketEvent("leaveTestFailed");
 			} else {
-				se = new SocketEvent("leaveConferenceSucceeded");
+				se = new SocketEvent("leaveTestSucceeded");
 			}
 
 			try {
@@ -217,19 +214,19 @@ public class TestGenServer implements Runnable {
 			}
 		}
 
-		private void handleSetUsersRole(ArrayList<Integer> usersIds, UsersRole uR, Integer conferenceId) {
+		private void handleSetUsersRole(ArrayList<Integer> usersIds, UsersRole uR, Integer testId) {
 			SocketEvent se = null;
 			if (uR == UsersRole.NONE) {
-				if (dbConn.expellUsers(usersIds, conferenceId)) {
-					Test c = dbConn.fetchTest(conferenceId);
+				if (dbConn.expellUsers(usersIds, testId)) {
+					Test c = dbConn.fetchTest(testId);
 					se = new SocketEvent("expellSucceeded", c);
 				} else {
 					se = new SocketEvent("expellFailed");
 				}
 
 			} else {
-				if (dbConn.updateUsersRoles(usersIds, uR, conferenceId)) {
-					Test c = dbConn.fetchTest(conferenceId);
+				if (dbConn.updateUsersRoles(usersIds, uR, testId)) {
+					Test c = dbConn.fetchTest(testId);
 					se = new SocketEvent("setRoleSucceeded", c);
 				} else {
 					se = new SocketEvent("setRoleFailed");
@@ -242,12 +239,12 @@ public class TestGenServer implements Runnable {
 			}
 		}
 
-		private void handleRemoveConference(int conferenceId) {
+		private void handleRemoveTest(int testId) {
 			SocketEvent se = null;
-			if (!dbConn.removeTest(conferenceId)) {
-				se = new SocketEvent("removeConferenceFailed");
+			if (!dbConn.removeTest(testId)) {
+				se = new SocketEvent("removeTestFailed");
 			} else {
-				se = new SocketEvent("removeConferenceSucceeded");
+				se = new SocketEvent("removeTestSucceeded");
 			}
 
 			try {
@@ -292,9 +289,9 @@ public class TestGenServer implements Runnable {
 			}
 		}
 
-		private void handleSendForumMessage(int userId, int conferenceId, String message) {
+		private void handleSendForumMessage(int userId, int targetTestId, String message) {
 			SocketEvent se = null;
-			if (!dbConn.addPost(userId, conferenceId, message)) {
+			if (!dbConn.addPost(userId, targetTestId, message)) {
 				se = new SocketEvent("sendForumMessageFailed");
 			} else {
 				se = new SocketEvent("sendForumMessageSucceeded");
@@ -325,13 +322,13 @@ public class TestGenServer implements Runnable {
 			}
 		}
 
-		private void handleRequestConferencesPosts(int userId, int conferenceId) {
+		private void handleRequestTestsPosts(int userId, int targetTestId) {
 			SocketEvent se = null;
-			UsersRole fetchedRole = dbConn.checkUsersRole(userId, conferenceId);
+			UsersRole fetchedRole = dbConn.checkUsersRole(userId, targetTestId);
 			if (fetchedRole == UsersRole.NONE || fetchedRole == UsersRole.PENDING) {
 				se = new SocketEvent("sendForumFeedFailed");
 			} else {
-				ArrayList<Post> posts = dbConn.fetchConferencesPosts(conferenceId);
+				ArrayList<Post> posts = dbConn.fetchTestsPosts(targetTestId);
 				se = new SocketEvent("sendForumFeedSucceeded", posts);
 			}
 
@@ -400,8 +397,8 @@ public class TestGenServer implements Runnable {
 			}
 		}
 
-		private void handleFetchFileInfos(Test forConference) {
-			ArrayList<FileInfo> fileInfoList = dbConn.getFileInfos(forConference.getId());
+		private void handleFetchFileInfos(Test forTest) {
+			ArrayList<FileInfo> fileInfoList = dbConn.getFileInfos(forTest.getId());
 			if (fileInfoList != null) {
 				try {
 					SocketEvent response = new SocketEvent("fileListFetched", fileInfoList);
@@ -530,8 +527,8 @@ public class TestGenServer implements Runnable {
 							break;
 						}
 						case "reqestFileList": {
-							Test forConference = se.getObject(Test.class);
-							handleFetchFileInfos(forConference);
+							Test forTest = se.getObject(Test.class);
+							handleFetchFileInfos(forTest);
 							break;
 						}
 						case "reqestSendingChosenFile": {
@@ -577,46 +574,46 @@ public class TestGenServer implements Runnable {
 							handleAddTest(c);
 							break;
 						}
-						case "reqJoinConference": {
+						case "reqJoinTest": {
 							@SuppressWarnings("unchecked")
-							ArrayList<Integer> userIdConferenceId = se.getObject(ArrayList.class);
-							int userId = userIdConferenceId.get(0);
-							int conferenceId = userIdConferenceId.get(1);
-							handleJoinConference(userId, conferenceId);
+							ArrayList<Integer> userIdTestId = se.getObject(ArrayList.class);
+							int userId = userIdTestId.get(0);
+							int testId = userIdTestId.get(1);
+							handleJoinTest(userId, testId);
 							break;
 						}
 
-						case "reqLeaveConference": {
+						case "reqLeaveTest": {
 							@SuppressWarnings("unchecked")
-							ArrayList<Integer> userIdConferenceId = se.getObject(ArrayList.class);
-							int userId = userIdConferenceId.get(0);
-							int conferenceId = userIdConferenceId.get(1);
-							handleLeaveConference(userId, conferenceId);
+							ArrayList<Integer> userIdTestId = se.getObject(ArrayList.class);
+							int userId = userIdTestId.get(0);
+							int testId = userIdTestId.get(1);
+							handleLeaveTest(userId, testId);
 							break;
 						}
 
-						case "reqRemoveConference": {
-							Integer conferenceId = se.getObject(Integer.class);
-							handleRemoveConference(conferenceId);
+						case "reqRemoveTest": {
+							Integer testId = se.getObject(Integer.class);
+							handleRemoveTest(testId);
 							break;
 						}
 
 						case "reqSendForumMessage": {
 							@SuppressWarnings("unchecked")
-							ArrayList<Integer> userIdConferenceId = se.getObject(ArrayList.class);
+							ArrayList<Integer> userIdTestId = se.getObject(ArrayList.class);
 							String message = se.getObject(String.class);
-							int userId = userIdConferenceId.get(0);
-							int conferenceId = userIdConferenceId.get(1);
-							handleSendForumMessage(userId, conferenceId, message);
+							int userId = userIdTestId.get(0);
+							int testId = userIdTestId.get(1);
+							handleSendForumMessage(userId, testId, message);
 							break;
 						}
 
-						case "reqConferencesPosts": {
+						case "reqTestsPosts": {
 							@SuppressWarnings("unchecked")
-							ArrayList<Integer> userIdConferenceId = se.getObject(ArrayList.class);
-							int userId = userIdConferenceId.get(0);
-							int conferenceId = userIdConferenceId.get(1);
-							handleRequestConferencesPosts(userId, conferenceId);
+							ArrayList<Integer> userIdTestId = se.getObject(ArrayList.class);
+							int userId = userIdTestId.get(0);
+							int testId = userIdTestId.get(1);
+							handleRequestTestsPosts(userId, testId);
 							break;
 						}
 
@@ -624,8 +621,8 @@ public class TestGenServer implements Runnable {
 							@SuppressWarnings("unchecked")
 							ArrayList<Integer> usersIds = se.getObject(ArrayList.class);
 							User.UsersRole role = se.getObject(UsersRole.class);
-							Integer conferenceId = se.getObject(Integer.class);
-							handleSetUsersRole(usersIds, role, conferenceId);
+							Integer testId = se.getObject(Integer.class);
+							handleSetUsersRole(usersIds, role, testId);
 							break;
 						}
 

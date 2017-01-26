@@ -4,11 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-
-import javax.swing.plaf.synth.SynthSeparatorUI;
 
 import oracle.jdbc.pool.OracleDataSource;
 import testGen.model.User.UsersRole;
@@ -213,10 +210,10 @@ public class DbConnection {
 		return participantsId;
 	}
 
-	public boolean expellUsers(ArrayList<Integer> usersIds, Integer conferenceId) {
+	public boolean expellUsers(ArrayList<Integer> usersIds, Integer testId) {
 		boolean succeeded = true;
 		for (Integer id : usersIds) {
-			if (!removeParticipant(id, conferenceId)) {
+			if (!removeParticipant(id, testId)) {
 				succeeded = false;
 				break;
 			}
@@ -293,21 +290,21 @@ public class DbConnection {
 
 	public boolean addTest(Test c) {
 		boolean succeeded = true;
-		String addConferenceProcedure = "{call add_test(?, ?, ?, ?, ?, ?, ?, ?)}";
-
+		String addTestProcedure = "{call add_test(?, ?, ?, ?, ?, ?, ?, ?)}";
+		
+		String insertStartTime = c.getStartTime().toString().replace('T', ' ');
+		String insertEndTime = c.getEndTime().toString().replace('T', ' ');
+		
 		try {
-			PreparedStatement pstmt = conn.prepareStatement(addConferenceProcedure);
+			PreparedStatement pstmt = conn.prepareStatement(addTestProcedure);
 			pstmt.setInt(1, c.getFirstOrganizer().getId());
 			pstmt.setString(2, c.getName());
 			pstmt.setString(3, c.getDescription());
 			pstmt.setInt(4, c.getnOfQuestions());
 			pstmt.setInt(5, c.getnOfAnswers());
-			
 			pstmt.setString(6, c.getCategory());
-			
-			pstmt.setDate(7, Date.valueOf(c.getStartTime().toLocalDate()));
-			pstmt.setDate(8, Date.valueOf(c.getEndTime().toLocalDate()));
-			
+			pstmt.setString(7, insertStartTime);
+			pstmt.setString(8, insertEndTime);
 			pstmt.executeUpdate();
 			pstmt.close();
 
@@ -322,10 +319,10 @@ public class DbConnection {
 	public boolean removeTest(int testId) {
 		boolean succeeded = true;
 
-		String removeConferenceQuery = "delete from TESTY where ID_TESTU = (?)";
+		String removeTestQuery = "delete from TESTY where ID_TESTU = (?)";
 
 		try {
-			PreparedStatement pstmt = conn.prepareStatement(removeConferenceQuery);
+			PreparedStatement pstmt = conn.prepareStatement(removeTestQuery);
 			pstmt.setInt(1, testId);
 			pstmt.executeUpdate();
 			pstmt.close();
@@ -367,7 +364,7 @@ public class DbConnection {
 
 		String checkIfPostBelongsToUserQuery = "select 1 from " + "POSTY where ID_UZYT = (?) and ID_POSTA = (?)";
 		
-		String checkIfUserIsConferenceAdmin = "select 1 from UCZESTNICY "
+		String checkIfUserIsTestAdmin = "select 1 from UCZESTNICY "
 				+ "where ID_UZYT = (?) and ROLA = 'organizator' and ID_TESTU "
 				+ "= (select ID_TESTU from POSTY where ID_POSTA = (?))";
 		
@@ -378,7 +375,7 @@ public class DbConnection {
 			if (callersId.equals(authorsId)) {
 				pstmt = conn.prepareStatement(checkIfPostBelongsToUserQuery);
 			} else {
-				pstmt = conn.prepareStatement(checkIfUserIsConferenceAdmin);
+				pstmt = conn.prepareStatement(checkIfUserIsTestAdmin);
 			}
 			
 			pstmt.setInt(1, callersId);
@@ -413,7 +410,7 @@ public class DbConnection {
 
 		try {
 			PreparedStatement pstmt = conn.prepareStatement(addFileQuery);
-			pstmt.setInt(1, receivedPaper.fileInfo.getTargetConferenceId());
+			pstmt.setInt(1, receivedPaper.fileInfo.getTargetTestId());
 			pstmt.setInt(2, receivedPaper.fileInfo.getAuthorsId());
 			pstmt.setString(3, receivedPaper.fileInfo.getFilename());
 
@@ -433,7 +430,7 @@ public class DbConnection {
 		return succeeded;
 	}
 
-	public ArrayList<FileInfo> getFileInfos(Integer conferenceId) {
+	public ArrayList<FileInfo> getFileInfos(Integer testId) {
 		String getFileInfosQuery = "select PLIKI.ID_PLIKU, PLIKI.ID_UZYT, UZYTKOWNICY.IMIE, UZYTKOWNICY.NAZWISKO, PLIKI.NAZWA, PLIKI.OPIS"
 				+ " from PLIKI join UZYTKOWNICY on PLIKI.ID_UZYT = UZYTKOWNICY.ID_UZYT"
 				+ " where PLIKI.ID_TESTU = (?)";
@@ -445,7 +442,7 @@ public class DbConnection {
 
 		try {
 			PreparedStatement pstmt = conn.prepareStatement(getFileInfosQuery);
-			pstmt.setString(1, conferenceId.toString());
+			pstmt.setString(1, testId.toString());
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
 				thisFileID = rs.getInt(1);
@@ -458,7 +455,7 @@ public class DbConnection {
 				String authorsPersonalData = authorsName + " " + authorsSurname;
 
 				resultingList.add(new FileInfo(thisFileID.intValue(), filename, fileDescription, authorsPersonalData,
-						authorsId, conferenceId));
+						authorsId, testId));
 			}
 			pstmt.close();
 		} catch (SQLException e) {
@@ -525,7 +522,7 @@ public class DbConnection {
 		return succeeded;
 	}
 
-	public ArrayList<Post> fetchConferencesPosts(Integer conferenceId) {
+	public ArrayList<Post> fetchTestsPosts(Integer testId) {
 		ArrayList<Post> posts = new ArrayList<Post>();
 		String fetchPostsQuery = "select ID_POSTA, ID_UZYT, "
 				+ "TRESC, to_char(DATA_UTWORZENIA,'yyyy-mm-dd hh24:mi:ss') FROM "
@@ -535,7 +532,7 @@ public class DbConnection {
 		try {
 			PreparedStatement pstmt;
 			pstmt = conn.prepareStatement(fetchPostsQuery);
-			pstmt.setInt(1, conferenceId);
+			pstmt.setInt(1, testId);
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
 				postsId = rs.getInt(1);
@@ -604,7 +601,7 @@ public class DbConnection {
 		}
 	}
 
-	private ArrayList<ArrayList<User>> fetchAllConferenceParticipants(int targetTestId) {
+	private ArrayList<ArrayList<User>> fetchAllTestParticipants(int targetTestId) {
 		ArrayList<ArrayList<User>> allParticipants = new ArrayList<ArrayList<User>>();
 		ArrayList<User> organizers = new ArrayList<User>();
 		ArrayList<User> participants = new ArrayList<User>();
@@ -698,7 +695,7 @@ public class DbConnection {
 			// [1] - participants
 			// [2] - pending
 			
-			ArrayList<ArrayList<User>> allParticipants = fetchAllConferenceParticipants(targetTestId);
+			ArrayList<ArrayList<User>> allParticipants = fetchAllTestParticipants(targetTestId);
 
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 			startTime = LocalDateTime.parse(startTimeStr, formatter);
@@ -740,7 +737,7 @@ public class DbConnection {
 
 	public ArrayList<Test> fetchTestFeed() {
 
-		// !past - show present and future conferences
+		// !past - show present and future tests
 
 		Integer testId = null, numQuestions = null, numAnswers = null;
 		String name = null, description = null, category = null;
@@ -775,7 +772,7 @@ public class DbConnection {
 				// [1] - participants
 				// [2] - pending
 				
-				ArrayList<ArrayList<User>> allParticipants = fetchAllConferenceParticipants(testId);
+				ArrayList<ArrayList<User>> allParticipants = fetchAllTestParticipants(testId);
 
 				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 				startTime = LocalDateTime.parse(startTimeStr, formatter);

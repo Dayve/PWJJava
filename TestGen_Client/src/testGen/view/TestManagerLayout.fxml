@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="confManagerWindow" prefHeight="560.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="testGen.controller.ConferenceManagerController">
+<AnchorPane fx:id="testManagerWindow" prefHeight="560.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="testGen.controller.TestManagerController">
    <children>
       <Button layoutX="32.0" layoutY="465.0" mnemonicParsing="false" onAction="#closeWindowBtn" onKeyReleased="#closeBtnEnterKey" text="Zamknij okno" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="50.0">
          <font>

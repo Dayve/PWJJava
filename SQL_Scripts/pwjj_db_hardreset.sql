@@ -173,6 +173,10 @@ END;
 
 
 -- Populate with data: -----------------------------------------------------------------------------
+
+-- select to_char(TO_DATE('2017/01/30 09:10', 'RRRR-MM-DD HH24:MI'), 'RRRR-MM-DD HH24:MI') from dual;
+-- select to_char(czas_zakonczenia, 'YYYY-MM-DD HH24:MI') from testy;
+
 INSERT INTO UZYTKOWNICY (ID_UZYT, LOGIN, HASLO, IMIE, NAZWISKO)
 VALUES (null, 'dp', 'a91262282f71bb8488398dcc9202f777d0206664', 'Dawid', 'Przystasz');
 
@@ -185,6 +189,9 @@ VALUES (null, 'js', '93f8bb0eb2c659b85694486c41717eaf0fe23cd4', 'Jan', 'Sekułow
 INSERT INTO KATEGORIE (ID_KAT, NAZWA_KAT)
 VALUES (null, 'Programowanie wysokopoziomowe');
 
+INSERT INTO KATEGORIE (ID_KAT, NAZWA_KAT)
+VALUES (null, 'Historia Polski');
+
 BEGIN
 	add_test(
 		1, -- użytkownik 1: dp
@@ -193,8 +200,19 @@ BEGIN
 		12,
 		4,
 		'Programowanie wysokopoziomowe',
-		TO_DATE('2017/01/31 9:40', 'YYYY-MM-DD HH24:MI'),
+		TO_DATE('2017/01/31 09:40', '	YYYY-MM-DD HH24:MI'),
 		TO_DATE('2017/01/31 11:50', 'YYYY-MM-DD HH24:MI')
+	);
+
+	add_test(
+		1, -- użytkownik 1: dp
+		'Test historyczny',
+		'Przykładowy opis testu',
+		8,
+		3,
+		'Historia Polski',
+		TO_DATE('2017/01/30 09:10', 'YYYY-MM-DD HH24:MI'),
+		TO_DATE('2017/01/30 13:50', 'YYYY-MM-DD HH24:MI')
 	);
 END;
 /

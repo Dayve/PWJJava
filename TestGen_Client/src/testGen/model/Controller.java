@@ -18,13 +18,13 @@ import testGen.controller.FeedController;
 import testGen.controller.ModifyPostController;
 
 public interface Controller {
-	public enum ConferenceFilter {
+	public enum TestFilter {
 		PAST, FUTURE, ONGOING, ALL
 	};
 
 	public enum RequestType {
-		UPDATE_CONFERENCE_FEED, REQUEST_JOINING_CONFERENCE, 
-		REQUEST_LEAVING_CONFERENCE, REQUEST_REMOVING_CONFERENCE, 
+		UPDATE_TEST_FEED, REQUEST_JOINING_TEST, 
+		REQUEST_LEAVING_TEST, REQUEST_REMOVING_TEST, 
 		REQUEST_LOGOUT
 	};
 

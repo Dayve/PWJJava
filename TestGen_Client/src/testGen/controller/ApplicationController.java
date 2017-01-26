@@ -56,13 +56,13 @@ public class ApplicationController implements Controller {
 	@FXML private Button nextMonth;
 	@FXML private TableView<Week> calendarTable; // A TableView representing the
 	// calendar
-	@FXML Button joinLeaveManageConfBtn;
-	@FXML Button removeConfBtn;
+	@FXML Button joinLeaveManageTestBtn;
+	@FXML Button removeTestBtn;
 	@FXML Button filesMenuButton;
-	@FXML private ListView<Label> conferenceFeedList;
+	@FXML private ListView<Label> testFeedList;
 	@FXML private AnchorPane feedAnchorPane;
-	@FXML private ComboBox<String> conferenceFeedCB;
-	@FXML private ComboBox<String> conferenceFeedNumberCB;
+	@FXML private ComboBox<String> testFeedCB;
+	@FXML private ComboBox<String> testFeedNumberCB;
 	@FXML private Label loginLabel;
 	@FXML private ListView<Label> listOfSelectedDaysEvents;
 	@FXML private TabPane eventDetailsTP;
@@ -75,7 +75,7 @@ public class ApplicationController implements Controller {
 	private String message = null;
 	private int checkedRequestsWithoutUpdate = 0;
 
-	private ConferenceFilter filter;
+	private TestFilter filter;
 
 	public enum feedReqPeriod {
 		PAST, FUTURE, ALL
@@ -89,7 +89,7 @@ public class ApplicationController implements Controller {
 		new Thread(() -> reqCurrentUser()).start();
 		setupFeedFilterCBs();
 		setupTabPane();
-		reqConferenceFeed();
+		reqTestFeed();
 		setupTimer();
 		setupForumTextArea();
 		setupMonthsYearsCBs();
@@ -122,7 +122,7 @@ public class ApplicationController implements Controller {
 					if (forumsMessage.getText().length() > 0) {
 						reqSendForumMessage(forumsMessage.getText());
 						forumsMessage.clear();
-						fc.refreshConferenceTab(eventDetailsTP, fc.getSelectedConferenceId(), fc.getFeed());
+						fc.refreshTestTab(eventDetailsTP, fc.getSelectedTestId(), fc.getFeed());
 					}
 					event.consume();
 				}
@@ -132,48 +132,49 @@ public class ApplicationController implements Controller {
 
 	private void setupTabResizeEvent() {
 		Stage mainStage = (Stage) applicationWindow.getScene().getWindow();
+		
 		mainStage.heightProperty().addListener(new ChangeListener<Number>() {
 			@Override public void changed(ObservableValue<? extends Number> arg0, Number arg1, Number arg2) {
-				fc.resizeSelectedConferenceTab(eventDetailsTP, arg2.intValue());
+				fc.resizeSelectedTestTab(eventDetailsTP, arg2.intValue());
 			}
 		});
 	}
 
-	// sets up the TabPane - makes it modify selectedConferenceId on tab
+	// sets up the TabPane - makes it modify selectedTestId on tab
 	// selection change
 	private void setupTabPane() {
 		eventDetailsTP.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
 			@Override public void changed(ObservableValue<? extends Tab> ov, Tab from, Tab to) {
 				if (to != null) {
-					fc.resizeSelectedConferenceTab(eventDetailsTP,
+					fc.resizeSelectedTestTab(eventDetailsTP,
 							applicationWindow.getScene().getWindow().heightProperty().getValue().intValue());
-					fc.setSelectedConferenceId(Integer.parseInt(to.getId()));
+					fc.setSelectedTestId(Integer.parseInt(to.getId()));
 					checkUsersParticipation();
 
 				} else {
-					fc.setSelectedConferenceId(null);
-					fc.refreshConferenceTab(eventDetailsTP, fc.getSelectedConferenceId(), fc.getFeed());
+					fc.setSelectedTestId(null);
+					fc.refreshTestTab(eventDetailsTP, fc.getSelectedTestId(), fc.getFeed());
 					checkUsersParticipation();
 				}
 			}
 		});
 	}
 
-	// sets up the ComboBoxes allowing user to filter conferences
+	// sets up the ComboBoxes allowing user to filter tests
 	private void setupFeedFilterCBs() {
 		ObservableList<String> feedOptions = FXCollections.observableArrayList("Nadchodzące konferencje",
 				"Wszystkie konferencje", "Zakończone konferencje");
 
-		conferenceFeedCB.getItems().addAll(feedOptions);
-		conferenceFeedCB.setValue("Nadchodzące konferencje");
+		testFeedCB.getItems().addAll(feedOptions);
+		testFeedCB.setValue("Nadchodzące konferencje");
 
 		ObservableList<String> feedNumberOptions = FXCollections.observableArrayList("5", "15", "30", "60", "...");
 
-		conferenceFeedNumberCB.getItems().addAll(feedNumberOptions);
-		conferenceFeedNumberCB.setValue("15");
+		testFeedNumberCB.getItems().addAll(feedNumberOptions);
+		testFeedNumberCB.setValue("15");
 
 		searchField.textProperty().addListener(obs -> {
-			refreshConferencesListView(searchField.getText());
+			refreshTestListView(searchField.getText());
 		});
 	}
 
@@ -227,28 +228,28 @@ public class ApplicationController implements Controller {
 						// TODO: requestQueue.contains() and remove() should be
 						// changed to something
 						// more appropriate once we extend requestType
-						fc.refreshConferenceTab(eventDetailsTP, fc.getSelectedConferenceId(), fc.getFeed());
-						if (requestQueue.contains(RequestType.UPDATE_CONFERENCE_FEED)
+						fc.refreshTestTab(eventDetailsTP, fc.getSelectedTestId(), fc.getFeed());
+						if (requestQueue.contains(RequestType.UPDATE_TEST_FEED)
 								|| checkedRequestsWithoutUpdate > 10) {
-							reqConferenceFeed();
+							reqTestFeed();
 							checkedRequestsWithoutUpdate = 0;
-							requestQueue.remove(RequestType.UPDATE_CONFERENCE_FEED);
+							requestQueue.remove(RequestType.UPDATE_TEST_FEED);
 						} else
 							checkedRequestsWithoutUpdate++;
 
-						if (requestQueue.contains(RequestType.REQUEST_JOINING_CONFERENCE)) {
-							reqJoinConference();
-							requestQueue.remove(RequestType.REQUEST_JOINING_CONFERENCE);
+						if (requestQueue.contains(RequestType.REQUEST_JOINING_TEST)) {
+							reqJoinTest();
+							requestQueue.remove(RequestType.REQUEST_JOINING_TEST);
 						}
 
-						if (requestQueue.contains(RequestType.REQUEST_LEAVING_CONFERENCE)) {
-							reqLeaveConference();
-							requestQueue.remove(RequestType.REQUEST_LEAVING_CONFERENCE);
+						if (requestQueue.contains(RequestType.REQUEST_LEAVING_TEST)) {
+							reqLeaveTest();
+							requestQueue.remove(RequestType.REQUEST_LEAVING_TEST);
 						}
 
-						if (requestQueue.contains(RequestType.REQUEST_REMOVING_CONFERENCE)) {
-							reqRemoveConference();
-							requestQueue.remove(RequestType.REQUEST_REMOVING_CONFERENCE);
+						if (requestQueue.contains(RequestType.REQUEST_REMOVING_TEST)) {
+							reqRemoveTest();
+							requestQueue.remove(RequestType.REQUEST_REMOVING_TEST);
 						}
 						if(requestQueue.contains(RequestType.REQUEST_LOGOUT)) {
 							logout();
@@ -259,22 +260,23 @@ public class ApplicationController implements Controller {
 		}, 0, 200);
 	}
 
-	public static UsersRole usersRoleOnConference(User user, Integer conferenceId) {
-		Test conference = null;
+	public static UsersRole usersRoleOnTheTest(User user, Integer testId) {
+		Test test = null;
+		
 		for(Test c : fc.getFeed()) {
-			if(conferenceId.equals(c.getId())) {
-				conference = c;
+			if(testId.equals(c.getId())) {
+				test = c;
 			}
 		}
-		for (User u : conference.getParticipants()) {
+		for (User u : test.getParticipants()) {
 			if (u.getId().equals(user.getId()))
 				return UsersRole.PARTICIPANT;
 		}
-		for (User u : conference.getOrganizers()) {
+		for (User u : test.getOrganizers()) {
 			if (u.getId().equals(user.getId()))
 				return UsersRole.ORGANIZER;
 		}
-		for (User u : conference.getPending()) {
+		for (User u : test.getPending()) {
 			if (u.getId().equals(user.getId()))
 				return UsersRole.PENDING;
 		}
@@ -282,12 +284,12 @@ public class ApplicationController implements Controller {
 	}
 
 	private void reqSendForumMessage(String message) {
-		if (fc.getSelectedConferenceId() != null) {
+		if (fc.getSelectedTestId() != null) {
 			if (message.length() > 0) {
-				ArrayList<Integer> userIdConferenceId = new ArrayList<Integer>();
-				userIdConferenceId.add(currentUser.getId());
-				userIdConferenceId.add(fc.getSelectedConferenceId());
-				SocketEvent se = new SocketEvent("reqSendForumMessage", userIdConferenceId, message);
+				ArrayList<Integer> userIdTestId = new ArrayList<Integer>();
+				userIdTestId.add(currentUser.getId());
+				userIdTestId.add(fc.getSelectedTestId());
+				SocketEvent se = new SocketEvent("reqSendForumMessage", userIdTestId, message);
 
 				NetworkConnection.sendSocketEvent(se);
 				SocketEvent res = NetworkConnection.rcvSocketEvent("sendForumMessageSucceeded", 
@@ -304,108 +306,108 @@ public class ApplicationController implements Controller {
 		}
 	}
 
-	// filters feed depending on conferenceCB's value - future/all/past
-	// conferences
+	// filters feed depending on test CB's value - future/all/past
+	// tests
 	@FXML private void filterFeed() {
-		String feedPeriodCB = conferenceFeedCB.getValue();
-		filter = ConferenceFilter.ALL;
-		if (feedPeriodCB.equals("Zakończone konferencje")) {
-			filter = ConferenceFilter.PAST;
-		} else if (feedPeriodCB.equals("Nadchodzące konferencje")) {
-			filter = ConferenceFilter.FUTURE;
+		String feedPeriodCB = testFeedCB.getValue();
+		filter = TestFilter.ALL;
+		if (feedPeriodCB.equals("Zakończone testy")) {
+			filter = TestFilter.PAST;
+		} else if (feedPeriodCB.equals("Nadchodzące testy")) {
+			filter = TestFilter.FUTURE;
 		}
-		ArrayList<Test> filtered = fc.filterFeed(fc.getFeed(), filter, conferenceFeedNumberCB.getValue());
+		ArrayList<Test> filtered = fc.filterFeed(fc.getFeed(), filter, testFeedNumberCB.getValue());
 		Platform.runLater(new Runnable() {
 			@Override public void run() {
-				fc.fillListWithLabels(conferenceFeedList, filtered, eventDetailsTP, filter, CHAR_LIMIT_IN_TITLEPANE, 
-						true, conferenceFeedNumberCB.getValue());
-				refreshConferencesListView(searchField.getText());
+				fc.fillListWithLabels(testFeedList, filtered, eventDetailsTP, filter, CHAR_LIMIT_IN_TITLEPANE, 
+						true, testFeedNumberCB.getValue());
+				refreshTestListView(searchField.getText());
 			}
 		});
 	}
 
-	// checks if currentUser participates in given (selected) conference
+	// checks if currentUser participates in given (selected) test
 	// and modifies leave/join button text and behaviour accordingly
 	private void checkUsersParticipation() {
-		Integer selectedConfId = fc.getSelectedConferenceId();
-		// look for conference thats id is clicked
-		if (selectedConfId != null) {
+		Integer selectedTestId = fc.getSelectedTestId();
+		// look for test thats id is clicked
+		if (selectedTestId != null) {
 			try {
-				Test selectedConf = fc.getSelectedConference();
-				UsersRole role = usersRoleOnConference(currentUser, selectedConfId);
+				Test selectedTest = fc.getSelectedTest();
+				UsersRole role = usersRoleOnTheTest(currentUser, selectedTestId);
 				switch (role) {
 					case ORGANIZER: {
-						removeConfBtn.setDisable(false);
+						removeTestBtn.setDisable(false);
 						filesMenuButton.setDisable(false);
-						// if the conference has already ended, don't let change users' roles
-						if(selectedConf.getEndTime().isAfter(LocalDateTime.now())) {
-							joinLeaveManageConfBtn.setDisable(false);
-							joinLeaveManageConfBtn.setOnAction((event) -> {
-								manageConferenceBtn();
+						// if the test has already ended, don't let change users' roles
+						if(selectedTest.getEndTime().isAfter(LocalDateTime.now())) {
+							joinLeaveManageTestBtn.setDisable(false);
+							joinLeaveManageTestBtn.setOnAction((event) -> {
+								manageTestBtn();
 							});
 						} else {
-							joinLeaveManageConfBtn.setDisable(true);
+							joinLeaveManageTestBtn.setDisable(true);
 						}
-						joinLeaveManageConfBtn.setText("Zarządzaj");
+						joinLeaveManageTestBtn.setText("Zarządzaj");
 						GridPane.setRowSpan(eventDetailsTP, 4);
 						forumsMessage.setVisible(true);
 						break;
 					}
 					case PARTICIPANT: {
-						removeConfBtn.setDisable(true);
-						joinLeaveManageConfBtn.setDisable(false);
+						removeTestBtn.setDisable(true);
+						joinLeaveManageTestBtn.setDisable(false);
 						filesMenuButton.setDisable(false);
-						joinLeaveManageConfBtn.setOnAction((event) -> {
-							new Thread(() -> leaveConferenceBtn()).start();
+						joinLeaveManageTestBtn.setOnAction((event) -> {
+							new Thread(() -> leaveTestBtn()).start();
 						});
-						joinLeaveManageConfBtn.setText("Wycofaj się");
+						joinLeaveManageTestBtn.setText("Wycofaj się");
 						GridPane.setRowSpan(eventDetailsTP, 4);
 						forumsMessage.setVisible(true);
 						break;
 					}
 					case NONE: {
-						joinLeaveManageConfBtn.setDisable(false);
+						joinLeaveManageTestBtn.setDisable(false);
 						filesMenuButton.setDisable(true);
-						removeConfBtn.setDisable(true);
+						removeTestBtn.setDisable(true);
 						GridPane.setRowSpan(eventDetailsTP, 5);
 						forumsMessage.setVisible(false);
-						joinLeaveManageConfBtn.setOnAction((event) -> {
-							new Thread(() -> joinConferenceBtn()).start();
+						joinLeaveManageTestBtn.setOnAction((event) -> {
+							new Thread(() -> joinTestBtn()).start();
 						});
-						joinLeaveManageConfBtn.setText("Weź udział");
+						joinLeaveManageTestBtn.setText("Weź udział");
 						break;
 					}
 					case PENDING: {
-						joinLeaveManageConfBtn.setDisable(false);
+						joinLeaveManageTestBtn.setDisable(false);
 						filesMenuButton.setDisable(true);
-						removeConfBtn.setDisable(true);
+						removeTestBtn.setDisable(true);
 						GridPane.setRowSpan(eventDetailsTP, 5);
 						forumsMessage.setVisible(false);
-						joinLeaveManageConfBtn.setOnAction((event) -> {
-							new Thread(() -> leaveConferenceBtn()).start();
+						joinLeaveManageTestBtn.setOnAction((event) -> {
+							new Thread(() -> leaveTestBtn()).start();
 						});
-						joinLeaveManageConfBtn.setText("Wycofaj się");
+						joinLeaveManageTestBtn.setText("Wycofaj się");
 						break;
 					}
 					default:
 						break;
 				}
 			} catch (NoSuchElementException e) {
-				fc.setSelectedConferenceId(null);
+				fc.setSelectedTestId(null);
 				checkUsersParticipation();
 			}
-		} else { // if no conference is selected
+		} else { // if no test is selected
 			filesMenuButton.setDisable(true);
-			removeConfBtn.setDisable(true);
+			removeTestBtn.setDisable(true);
 			forumsMessage.setVisible(false);
-			joinLeaveManageConfBtn.setDisable(true);
+			joinLeaveManageTestBtn.setDisable(true);
 		}
 	}
 
-	// requests data about conferences from the database through the server
+	// requests data about test from the database through the server
 	// compares it with current data and if there is difference, updates
 	// information
-	@SuppressWarnings("unchecked") @FXML public void reqConferenceFeed() {
+	@SuppressWarnings("unchecked") @FXML public void reqTestFeed() {
 		SocketEvent e = new SocketEvent("reqTestFeed");
 		NetworkConnection.sendSocketEvent(e);
 		SocketEvent res = NetworkConnection.rcvSocketEvent("updateTestFeed");
@@ -425,15 +427,15 @@ public class ApplicationController implements Controller {
 				Platform.runLater(new Runnable() {
 					@Override public void run() {
 						ArrayList<Test> feed = fc.getFeed();
-						fc.refreshConferenceTabs(eventDetailsTP, feed);
+						fc.refreshTestTabs(eventDetailsTP, feed);
 						// fill FeedBox and Calendar in JavaFX UI Thread
 						checkUsersParticipation();
 						filterFeed();
 						calendar.refreshCalendarTable(calendarTable, calendar.getCalendarsDate(), feed, eventDetailsTP,
 								listOfSelectedDaysEvents);
-						refreshConferencesListView(searchField.getText());
-						fc.fillListViewWithSelectedDaysConferences(calendar.getCalendarsDate(), feed, eventDetailsTP,
-								listOfSelectedDaysEvents, false, conferenceFeedNumberCB.getValue());
+						refreshTestListView(searchField.getText());
+						fc.fillListViewWithSelectedDaysTests(calendar.getCalendarsDate(), feed, eventDetailsTP,
+								listOfSelectedDaysEvents, false, testFeedNumberCB.getValue());
 					}
 				});
 			}
@@ -442,30 +444,30 @@ public class ApplicationController implements Controller {
 	}
 
 	// bound to searchField, this is reaction to typed text
-	private void refreshConferencesListView(String searchBoxContent) {
+	private void refreshTestListView(String searchBoxContent) {
 
-		String periodFilterFromComboBox = conferenceFeedCB.getValue();
-		filter = ConferenceFilter.ALL;
-		if (periodFilterFromComboBox.equals("Zakończone konferencje")) {
-			filter = ConferenceFilter.PAST;
-		} else if (periodFilterFromComboBox.equals("Nadchodzące konferencje")) {
-			filter = ConferenceFilter.FUTURE;
+		String periodFilterFromComboBox = testFeedCB.getValue();
+		filter = TestFilter.ALL;
+		if (periodFilterFromComboBox.equals("Zakończone testy")) {
+			filter = TestFilter.PAST;
+		} else if (periodFilterFromComboBox.equals("Nadchodzące testy")) {
+			filter = TestFilter.FUTURE;
 		}
 		
 		ArrayList<Test> filteringResults = new ArrayList<Test>();
 
-		for(Test conference : fc.filterFeed(fc.getFeed(), filter, conferenceFeedNumberCB.getValue())) {
-			if(conference.getName().toLowerCase().contains(searchBoxContent.toLowerCase()) ||
-				conference.getCategory().toLowerCase().contains(searchBoxContent.toLowerCase()))
+		for(Test iteratedTest : fc.filterFeed(fc.getFeed(), filter, testFeedNumberCB.getValue())) {
+			if(iteratedTest.getName().toLowerCase().contains(searchBoxContent.toLowerCase()) ||
+				iteratedTest.getCategory().toLowerCase().contains(searchBoxContent.toLowerCase()))
 			{
-				filteringResults.add(conference);
+				filteringResults.add(iteratedTest);
 			}
 		}
 	
 		Platform.runLater(new Runnable() {
 			@Override public void run() {
-				fc.fillListWithLabels(conferenceFeedList, filteringResults, eventDetailsTP, filter,
-						CHAR_LIMIT_IN_TITLEPANE, true, conferenceFeedNumberCB.getValue());
+				fc.fillListWithLabels(testFeedList, filteringResults, eventDetailsTP, filter,
+						CHAR_LIMIT_IN_TITLEPANE, true, testFeedNumberCB.getValue());
 			}
 		});
 }
@@ -484,60 +486,60 @@ public class ApplicationController implements Controller {
 		}
 	}
 
-	@FXML public void manageConferenceBtn() {
-		Integer selectedConfId = fc.getSelectedConferenceId();
-		if (selectedConfId != null) {
-			String selectedConfName = fc.getSelectedConference().getName();
-			openNewWindow(applicationWindow, "view/ConferenceManagerLayout.fxml", 650, 600, false,
-					"Zarządzaj konferencją \"" + selectedConfName + "\"");
+	@FXML public void manageTestBtn() {
+		Integer selectedTestId = fc.getSelectedTestId();
+		if (selectedTestId != null) {
+			String selectedTestName = fc.getSelectedTest().getName();
+			openNewWindow(applicationWindow, "view/TestManagerLayout.fxml", 650, 600, false,
+					"Zarządzaj testem \"" + selectedTestName + "\"");
 		}
 	}
 	
 	@FXML public void manageFilesBtn() {
-		Integer selectedConfId = fc.getSelectedConferenceId();
+		Integer selectedTestId = fc.getSelectedTestId();
 		
-		if (selectedConfId != null) {
-			UploadFileController.setSelectedConferenceId(selectedConfId);
-			String selectedConfName = fc.getSelectedConference().getName();
+		if (selectedTestId != null) {
+			UploadFileController.setSelectedTestId(selectedTestId);
+			String selectedTestName = fc.getSelectedTest().getName();
 			openNewWindow(applicationWindow, "view/FileManagerLayout.fxml", 700, 500, false,
-					"Zarządzaj plikami konferencji \"" + selectedConfName + "\"");
+					"Zarządzaj plikami testu \"" + selectedTestName + "\"");
 		}
 	}
 	
-	// sends request to join conference after user confirms it
-	@FXML public void joinConferenceBtn() {
-		Integer selectedConfId = fc.getSelectedConferenceId();
+	// sends request to join a test after user confirms it
+	@FXML public void joinTestBtn() {
+		Integer selectedTestId = fc.getSelectedTestId();
 
-		if (selectedConfId != null) {
-			String conferenceName = fc.getSelectedConference().getName();
+		if (selectedTestId != null) {
+			String testName = fc.getSelectedTest().getName();
 
-			String message = "Czy na pewno chcesz wziąć udział w konferencji \"" + conferenceName + "\"?";
+			String message = "Czy na pewno chcesz wziąć udział w teście \"" + testName + "\"?";
 			Platform.runLater(new Runnable() {
 				@Override public void run() {
-					openConfirmationWindow(applicationWindow, message, RequestType.REQUEST_JOINING_CONFERENCE);
-					fc.refreshConferenceTab(eventDetailsTP, fc.getSelectedConferenceId(), fc.getFeed());
+					openConfirmationWindow(applicationWindow, message, RequestType.REQUEST_JOINING_TEST);
+					fc.refreshTestTab(eventDetailsTP, fc.getSelectedTestId(), fc.getFeed());
 				}
 			});
 		}
 	}
 
-	// actual request for joining a conference
-	private void reqJoinConference() {
-		ArrayList<Integer> userIdConferenceId = new ArrayList<Integer>();
-		userIdConferenceId.add(currentUser.getId());
-		userIdConferenceId.add(fc.getSelectedConferenceId());
+	// actual request for joining a test
+	private void reqJoinTest() {
+		ArrayList<Integer> userIdTestId = new ArrayList<Integer>();
+		userIdTestId.add(currentUser.getId());
+		userIdTestId.add(fc.getSelectedTestId());
 
-		SocketEvent se = new SocketEvent("reqJoinConference", userIdConferenceId);
+		SocketEvent se = new SocketEvent("reqJoinTest", userIdTestId);
 		NetworkConnection.sendSocketEvent(se);
 
-		SocketEvent res = NetworkConnection.rcvSocketEvent("joinConferenceSucceeded",
-				 "joinConferenceFailed");
+		SocketEvent res = NetworkConnection.rcvSocketEvent("joinTestSucceeded",
+				 "joinTestFailed");
 		String eventName = res.getName();
-		if (eventName.equals("joinConferenceSucceeded")) {
-			reqConferenceFeed();
-			message = "Wysłano prośbę o udział w konferencji do jej organizatora.";
+		if (eventName.equals("joinTestSucceeded")) {
+			reqTestFeed();
+			message = "Wysłano prośbę o udział w teście do jej organizatora.";
 		} else {
-			message = "Nie udało się dołączyć do konferencji.";
+			message = "Nie udało się zapisać na test.";
 		}
 
 		Platform.runLater(new Runnable() {
@@ -547,37 +549,40 @@ public class ApplicationController implements Controller {
 		});
 	}
 
-	// sends request to leave conference after user confirms it
-	@FXML public void leaveConferenceBtn() {
-		Integer selectedConfId = fc.getSelectedConferenceId();
-		if (selectedConfId != null) {
-			String conferenceName = fc.getSelectedConference().getName();
-			String message = "Czy na pewno chcesz zrezygnować z udziału w konferencji \"" + conferenceName + "\"?";
+	// sends request to leave a test after user confirms it
+	@FXML public void leaveTestBtn() {
+		Integer selectedTestId = fc.getSelectedTestId();
+		
+		if (selectedTestId != null) {
+			String testName = fc.getSelectedTest().getName();
+			String message = "Czy na pewno chcesz zrezygnować z udziału w teście \"" + testName + "\"?";
+			
 			Platform.runLater(new Runnable() {
 				@Override public void run() {
-					openConfirmationWindow(applicationWindow, message, RequestType.REQUEST_LEAVING_CONFERENCE);
-					fc.refreshConferenceTab(eventDetailsTP, fc.getSelectedConferenceId(), fc.getFeed());
+					openConfirmationWindow(applicationWindow, message, RequestType.REQUEST_LEAVING_TEST);
+					fc.refreshTestTab(eventDetailsTP, fc.getSelectedTestId(), fc.getFeed());
 				}
 			});
 		}
 	}
 
-	// actual request for leaving a conference
-	private void reqLeaveConference() {
-		ArrayList<Integer> userIdConferenceId = new ArrayList<Integer>();
-		userIdConferenceId.add(currentUser.getId());
-		userIdConferenceId.add(fc.getSelectedConferenceId());
-
-		SocketEvent se = new SocketEvent("reqLeaveConference", userIdConferenceId);
+	// actual request for leaving a test
+	private void reqLeaveTest() {
+		ArrayList<Integer> userIdTestId = new ArrayList<Integer>();
+		userIdTestId.add(currentUser.getId());
+		userIdTestId.add(fc.getSelectedTestId());
+		
+		SocketEvent se = new SocketEvent("reqLeaveTest", userIdTestId);
 		NetworkConnection.sendSocketEvent(se);
 
-		SocketEvent res = NetworkConnection.rcvSocketEvent("leaveConferenceSucceeded", "leaveConferenceFailed");
+		SocketEvent res = NetworkConnection.rcvSocketEvent("leaveTestSucceeded", "leaveTestFailed");
 		String eventName = res.getName();
-		if (eventName.equals("leaveConferenceSucceeded")) {
-			reqConferenceFeed();
-			message = "Zrezygnowałeś z udziału w konferencji.";
+		
+		if (eventName.equals("leaveTestSucceeded")) {
+			reqTestFeed();
+			message = "Zrezygnowałeś z udziału w teście.";
 		} else {
-			message = "Nie udało się zrezygnować z udziału w konferencji.";
+			message = "Nie udało się zrezygnować z udziału w teście.";
 		}
 
 		Platform.runLater(new Runnable() {
@@ -587,31 +592,31 @@ public class ApplicationController implements Controller {
 		});
 	}
 
-	@FXML public void removeConferenceBtn() {
-		Integer selectedConfId = fc.getSelectedConferenceId();
+	@FXML public void removeTestBtn() {
+		Integer selectedConfId = fc.getSelectedTestId();
 		if (selectedConfId != null) {
-			String conferenceName = fc.getSelectedConference().getName();
-			String message = "Czy na pewno chcesz usunąć konferencję \"" + conferenceName + "\"?";
+			String testName = fc.getSelectedTest().getName();
+			String message = "Czy na pewno chcesz usunąć test \"" + testName + "\"?";
 			Platform.runLater(new Runnable() {
 				@Override public void run() {
-					openConfirmationWindow(applicationWindow, message, RequestType.REQUEST_REMOVING_CONFERENCE);
+					openConfirmationWindow(applicationWindow, message, RequestType.REQUEST_REMOVING_TEST);
 				}
 			});
 		}
 	}
 
-	// actual request for leaving a conference
-	private void reqRemoveConference() {
-		SocketEvent se = new SocketEvent("reqRemoveConference", fc.getSelectedConferenceId());
+	// actual request for leaving a test
+	private void reqRemoveTest() {
+		SocketEvent se = new SocketEvent("reqRemoveTest", fc.getSelectedTestId());
 		NetworkConnection.sendSocketEvent(se);
 
-		SocketEvent res = NetworkConnection.rcvSocketEvent("removeConferenceSucceeded", "removeConferenceFailed");
+		SocketEvent res = NetworkConnection.rcvSocketEvent("removeTestSucceeded", "removeTestFailed");
 		String eventName = res.getName();
-		if (eventName.equals("removeConferenceSucceeded")) {
-			reqConferenceFeed();
-			message = "Udało się usunąć konferencję.";
+		if (eventName.equals("removeTestSucceeded")) {
+			reqTestFeed();
+			message = "Udało się usunąć test.";
 		} else {
-			message = "Nie udało się usunąć konferencji.";
+			message = "Nie udało się usunąć testu.";
 		}
 
 		Platform.runLater(new Runnable() {
@@ -643,8 +648,8 @@ public class ApplicationController implements Controller {
 		});
 	}
 
-	@FXML public void addConferenceBtn() {
-		openNewWindow(applicationWindow, "view/ConferenceCreatorLayout.fxml", 600, 650, false, "Dodaj konferencję");
+	@FXML public void addTestBtn() {
+		openNewWindow(applicationWindow, "view/TestCreatorLayout.fxml", 600, 650, false, "Dodaj test");
 	}
 	
 	@FXML public void editProfileBtn() {
