@@ -7,14 +7,14 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="profileEditorWindow" prefHeight="435.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="testGen.controller.ProfileEditorController">
+<AnchorPane fx:id="profileEditorWindow" prefHeight="355.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="testGen.controller.ProfileEditorController">
    <children>
       <Label fx:id="titleField" alignment="CENTER" layoutX="49.0" layoutY="31.0" prefHeight="20.0" prefWidth="220.0" textAlignment="CENTER" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="25.0">
          <font>
             <Font size="14.0" />
          </font>
       </Label>
-      <Button layoutX="168.0" layoutY="250.0" mnemonicParsing="false" onAction="#confirmBtn" onKeyReleased="#confirmBtnEnterKey" text="Zatwierdź" AnchorPane.bottomAnchor="25.0" AnchorPane.rightAnchor="50.0">
+      <Button layoutX="267.0" layoutY="378.0" mnemonicParsing="false" onAction="#confirmBtn" onKeyReleased="#confirmBtnEnterKey" text="Zatwierdź" AnchorPane.bottomAnchor="31.0" AnchorPane.rightAnchor="50.0">
          <font>
             <Font size="13.0" />
          </font>
@@ -44,22 +44,12 @@
             <Font size="13.0" />
          </font>
       </TextField>
-      <TextField fx:id="emailField" layoutX="50.0" layoutY="290.0" prefHeight="30.0" prefWidth="220.0" promptText="Adres e-mail" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="290.0">
-         <font>
-            <Font size="13.0" />
-         </font>
-      </TextField>
-      <TextField fx:id="organizationField" layoutX="50.0" layoutY="346.0" promptText="Organizacja" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="335.0">
-         <font>
-            <Font size="13.0" />
-         </font>
-      </TextField>
-      <Button layoutX="85.0" layoutY="250.0" mnemonicParsing="false" onAction="#closeWindowBtn" onKeyReleased="#closeBtnEnterKey" text="Zakończ" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="50.0">
+      <Button layoutX="50.0" layoutY="378.0" mnemonicParsing="false" onAction="#closeWindowBtn" onKeyReleased="#closeBtnEnterKey" text="Zakończ" AnchorPane.bottomAnchor="31.0" AnchorPane.leftAnchor="50.0">
          <font>
             <Font size="13.0" />
          </font>
       </Button>
-      <Button layoutX="155.0" layoutY="383.0" mnemonicParsing="false" onAction="#deleteAccountBtn" text="Usuń konto" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="149.0" AnchorPane.rightAnchor="149.0">
+      <Button layoutX="149.0" layoutY="378.0" mnemonicParsing="false" onAction="#deleteAccountBtn" text="Usuń konto" AnchorPane.bottomAnchor="31.0" AnchorPane.leftAnchor="149.0" AnchorPane.rightAnchor="149.0">
          <font>
             <Font size="13.0" />
          </font>

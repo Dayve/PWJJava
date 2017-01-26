@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import testGen.model.Test;
+import testGen.model.Category;
 import testGen.model.DbConnection;
 import testGen.model.FileInfo;
 import testGen.model.Paper;
@@ -157,7 +158,7 @@ public class TestGenServer implements Runnable {
 		private void handleAddTest(Test newTest) {
 
 			int validationCode = isConferenceValid(newTest);
-			String socketEvtName = "addConferenceFailed";
+			String socketEvtName = "addTestFailed";
 			String message = "";
 			SocketEvent se = null;
 
@@ -173,7 +174,7 @@ public class TestGenServer implements Runnable {
 				if (!dbConn.addTest(newTest)) {
 					message = "Nie udało się dodać konferencji. Błąd serwera.";
 				} else {
-					socketEvtName = "addConferenceSucceeded";
+					socketEvtName = "addTestSucceeded";
 				}
 			}
 
@@ -283,7 +284,7 @@ public class TestGenServer implements Runnable {
 			SocketEvent se = null;
 
 			// create SocketEvent w ArrayList arg
-			se = new SocketEvent("updateConferenceFeed", testFeed);
+			se = new SocketEvent("updateTestFeed", testFeed);
 			try {
 				objOut.writeObject(se);
 			} catch (IOException e1) {
@@ -477,6 +478,26 @@ public class TestGenServer implements Runnable {
 				}
 			}
 		}
+		
+		private void handleSendingCategoriesList() {
+			ArrayList<Category> categories = dbConn.fetchAllCategories();
+
+			if (categories != null) {
+				try {
+					SocketEvent response = new SocketEvent("categoriesFetched", categories);
+					objOut.writeObject(response);
+				} catch (IOException ioError) {
+					ioError.printStackTrace();
+				}
+			} else {
+				try {
+					SocketEvent response = new SocketEvent("categoriesFetchingError");
+					objOut.writeObject(response);
+				} catch (IOException ioError) {
+					ioError.printStackTrace();
+				}
+			}
+		}
 
 		@Override public void run() {
 			try {
@@ -493,6 +514,10 @@ public class TestGenServer implements Runnable {
 					// name tells server what to do
 					String eventName = se.getName();
 					switch (eventName) {
+						case "reqAllCategories": {
+							handleSendingCategoriesList();
+							break;
+						}
 						case "reqEditPost": {
 							User caller = se.getObject(User.class);
 							Post post = se.getObject(Post.class);
@@ -543,11 +568,11 @@ public class TestGenServer implements Runnable {
 							handleUpdateProfile(u, password);
 							break;
 						}
-						case "reqTestFeed": {							// TODO: CHANGED
+						case "reqTestFeed": {
 							handleTestFeed();
 							break;
 						}
-						case "reqAddTest": {							// TODO: CHANGED
+						case "reqAddTest": {
 							Test c = (Test) se.getObject(Test.class);
 							handleAddTest(c);
 							break;

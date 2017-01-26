@@ -16,7 +16,7 @@ import javafx.scene.control.TableView;
 
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
-import testGen.model.Conference;
+import testGen.model.Test;
 import testGen.model.Controller;
 import testGen.model.User.UsersRole;
 import testGen.model.Week;
@@ -33,13 +33,13 @@ public class CalendarController implements Controller {
 	}
 
 	public void refreshCalendarTable(TableView<Week> calendarTable, LocalDate calendarsDate,
-			ArrayList<Conference> conferencesFeed, TabPane tp, ListView<Label> listOfSelectedDaysEvents) {
+			ArrayList<Test> conferencesFeed, TabPane tp, ListView<Label> listOfSelectedDaysEvents) {
 		calendarTable.getItems().clear();
 		calendarTable.getColumns().clear();
 		fillCalendarTable(calendarTable, conferencesFeed, tp, listOfSelectedDaysEvents);
 	}
 
-	public void fillCalendarTable(TableView<Week> calendarTable, ArrayList<Conference> conferencesFeed, TabPane tp,
+	public void fillCalendarTable(TableView<Week> calendarTable, ArrayList<Test> conferencesFeed, TabPane tp,
 			ListView<Label> listOfSelectedDaysEvents) {
 		// ColumnTitle are used only while displaying the content,
 		// PropertyValue however must be the same as variable names in Week
@@ -74,10 +74,10 @@ public class CalendarController implements Controller {
 
 						if (item != null || !emptyCell) {
 							if (!item.isEmpty()) {
-								ArrayList<Conference> thisDayConferences = getConferencesAtDate(
+								ArrayList<Test> thisDayConferences = getConferencesAtDate(
 										selectedDate.withDayOfMonth(Integer.parseInt(item)), conferencesFeed);
 								if (!thisDayConferences.isEmpty()) {
-									for (Conference c : thisDayConferences) {
+									for (Test c : thisDayConferences) {
 										// If you have some role in more than
 										// one conference in that day, style
 										// will be overwritten
@@ -117,7 +117,7 @@ public class CalendarController implements Controller {
 								} else {
 									listOfSelectedDaysEvents.getItems().clear();
 								}
-								ConferenceCreatorController.setChosenDay(selectedDate);
+								TestCreatorController.setChosenDay(selectedDate);
 							}
 						}
 					}
@@ -231,11 +231,11 @@ public class CalendarController implements Controller {
 		return result;
 	}
 
-	private static ArrayList<Conference> getConferencesAtDate(LocalDate givenDate,
-			ArrayList<Conference> conferencesFeed) {
-		ArrayList<Conference> results = new ArrayList<Conference>();
+	private static ArrayList<Test> getConferencesAtDate(LocalDate givenDate,
+			ArrayList<Test> conferencesFeed) {
+		ArrayList<Test> results = new ArrayList<Test>();
 
-		for (Conference d : conferencesFeed) {
+		for (Test d : conferencesFeed) {
 			if (d.getStartTime().toLocalDate().equals(givenDate)) {
 				results.add(d);
 			}
@@ -245,8 +245,8 @@ public class CalendarController implements Controller {
 
 	// Returns true if there is a conference (one or more) assigned to a
 	// givenDate:
-	private static boolean isAnyConferenceAtDate(LocalDate givenDate, ArrayList<Conference> conferencesFeed) {
-		for (Conference d : conferencesFeed) {
+	private static boolean isAnyConferenceAtDate(LocalDate givenDate, ArrayList<Test> conferencesFeed) {
+		for (Test d : conferencesFeed) {
 			if (d.getStartTime().toLocalDate().equals(givenDate)) {
 				return true;
 			}

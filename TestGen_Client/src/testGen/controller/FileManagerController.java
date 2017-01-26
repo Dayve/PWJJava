@@ -1,6 +1,6 @@
 package testGen.controller;
 
-import testGen.model.Conference;
+import testGen.model.Test;
 import testGen.model.Controller;
 import testGen.model.FileInfo;
 import testGen.model.NetworkConnection;
@@ -40,29 +40,13 @@ public class FileManagerController implements Controller {
 	// local files
 	private static ArrayList<FileInfo> filesForThisConference = new ArrayList<FileInfo>();
 
-	public Conference browsedConference = null;
+	public Test browsedConference = null;
 
 	private void setButtonsPriviledges() {
 		switch (ApplicationController.usersRoleOnConference(ApplicationController.currentUser,
 				browsedConference.getId())) {
 			case ORGANIZER: {
 				removeFileButton.setDisable(false);
-				addNewFileButton.setDisable(false);
-				downloadFileButton.setDisable(false);
-				break;
-			}
-			case PRELECTOR:
-			case SPONSOR: {
-				FileInfo chosenRow = filesTableView.getSelectionModel().getSelectedItem();
-				if (chosenRow != null) {
-					if (ApplicationController.currentUser.getId().equals(chosenRow.getAuthorsId())) {
-						removeFileButton.setDisable(false);
-					} else {
-						removeFileButton.setDisable(true);
-					}
-				} else {
-					removeFileButton.setDisable(true);
-				}
 				addNewFileButton.setDisable(false);
 				downloadFileButton.setDisable(false);
 				break;

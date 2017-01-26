@@ -18,7 +18,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
-import testGen.model.Conference;
+import testGen.model.Test;
 import testGen.model.Controller;
 import testGen.model.NetworkConnection;
 import testGen.model.SocketEvent;
@@ -35,14 +35,14 @@ public class ConferenceManagerController implements Controller {
 	@FXML private ComboBox<String> fileOperationCB;
 
 	private int selectedConferenceId;
-	private Conference selectedConference;
+	private Test selectedConference;
 	private HashMap<Integer, User> selectedUsers = new HashMap<Integer, User>();
 	private HashMap<Integer, User> deselectedUsers = new HashMap<Integer, User>();
 
 	private String message;
 	private boolean notAnAdminAnymore = false;
 
-	private void setSelectedConference(Conference c) {
+	private void setSelectedConference(Test c) {
 		selectedConference = c;
 	}
 
@@ -96,11 +96,9 @@ public class ConferenceManagerController implements Controller {
 		usersLV.getItems().clear();
 		ArrayList<ArrayList<User>> selectedConferencesUsersGroups = new ArrayList<ArrayList<User>>();
 		selectedConferencesUsersGroups.add(selectedConference.getOrganizers());
-		selectedConferencesUsersGroups.add(selectedConference.getSponsors());
-		selectedConferencesUsersGroups.add(selectedConference.getPrelectors());
 		selectedConferencesUsersGroups.add(selectedConference.getParticipants());
 		selectedConferencesUsersGroups.add(selectedConference.getPending());
-		String[] roles = { "organizator", "sponsor", "prelegent", "uczestnik", "oczekujący" };
+		String[] roles = { "organizator", "uczestnik", "oczekujący" };
 		for (int i = 0; i < selectedConferencesUsersGroups.size(); i++) {
 			addUserLabelsWithRoles(ol, selectedConferencesUsersGroups.get(i), roles[i]);
 		}
@@ -167,14 +165,6 @@ public class ConferenceManagerController implements Controller {
 				targetRole = UsersRole.ORGANIZER;
 				break;
 			}
-			case "Ustaw status: sponsor": {
-				targetRole = UsersRole.SPONSOR;
-				break;
-			}
-			case "Ustaw status: prelegent": {
-				targetRole = UsersRole.PRELECTOR;
-				break;
-			}
 			case "Ustaw status: uczestnik": {
 				targetRole = UsersRole.PARTICIPANT;
 				break;
@@ -199,7 +189,7 @@ public class ConferenceManagerController implements Controller {
 					String eventName = res.getName();
 
 					if (eventName.equals("setRoleSucceeded") || eventName.equals("expellSucceeded")) {
-						setSelectedConference(res.getObject(Conference.class));
+						setSelectedConference(res.getObject(Test.class));
 						message = "Pomyślnie wprowadzono zmiany.";
 						ApplicationController.makeRequest(RequestType.UPDATE_CONFERENCE_FEED);
 					} else if (eventName.equals("setRoleFailed")) {

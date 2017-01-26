@@ -33,7 +33,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import testGen.model.Conference;
+import testGen.model.Test;
 import testGen.model.Controller;
 import testGen.model.NetworkConnection;
 import testGen.model.Post;
@@ -46,7 +46,7 @@ public class FeedController implements Controller {
 	public Parent mainApplicationWindow;
 
 	private Integer selectedConferenceId = null;
-	private ArrayList<Conference> feed = new ArrayList<Conference>();
+	private ArrayList<Test> feed = new ArrayList<Test>();
 	private HashMap<Integer, HashMap<Integer, Post>> eachConferencesPosts = new HashMap<Integer, HashMap<Integer, Post>>();
 	private HashMap<Integer, Tab> openedTabsConferencesIds = new HashMap<Integer, Tab>();
 	private Integer selectedPostsId = null;
@@ -145,15 +145,15 @@ public class FeedController implements Controller {
 		selectedConferenceId = null;
 	}
 
-	public ArrayList<Conference> getFeed() {
+	public ArrayList<Test> getFeed() {
 		return feed;
 	}
 
-	public void setFeed(ArrayList<Conference> feed) {
+	public void setFeed(ArrayList<Test> feed) {
 		this.feed = feed;
 	}
 
-	public Conference getSelectedConference() {
+	public Test getSelectedConference() {
 		if (selectedConferenceId != null) {
 			return feed.stream().filter(c -> c.getId() == selectedConferenceId).findFirst().get();
 		} else {
@@ -161,7 +161,7 @@ public class FeedController implements Controller {
 		}
 	}
 
-	public Conference getConference(int id) {
+	public Test getConference(int id) {
 		return feed.stream().filter(c -> c.getId() == id).findFirst().get();
 	}
 
@@ -213,25 +213,25 @@ public class FeedController implements Controller {
 		return result.substring(0, result.length() - 1);
 	}
 
-	public ArrayList<Conference> filterFeed(ArrayList<Conference> feed, ConferenceFilter cf,
+	public ArrayList<Test> filterFeed(ArrayList<Test> feed, ConferenceFilter cf,
 			String numberComboBoxValue) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 		LocalDateTime now = LocalDateTime.now();
 		now.format(formatter);
-		ArrayList<Conference> filtered = new ArrayList<Conference>();
+		ArrayList<Test> filtered = new ArrayList<Test>();
 		switch (cf) {
 			case PAST: {
-				filtered = (ArrayList<Conference>) feed.stream().filter(c -> c.getEndTime().isBefore(now))
+				filtered = (ArrayList<Test>) feed.stream().filter(c -> c.getEndTime().isBefore(now))
 						.collect(Collectors.toList());
 				break;
 			}
 			case FUTURE: {
-				filtered = (ArrayList<Conference>) feed.stream().filter(c -> c.getStartTime().isAfter(now))
+				filtered = (ArrayList<Test>) feed.stream().filter(c -> c.getStartTime().isAfter(now))
 						.collect(Collectors.toList());
 				break;
 			}
 			case ONGOING: {
-				filtered = (ArrayList<Conference>) feed.stream()
+				filtered = (ArrayList<Test>) feed.stream()
 						.filter(c -> c.getStartTime().isAfter(now) && c.getEndTime().isBefore(now))
 						.collect(Collectors.toList());
 				break;
@@ -244,7 +244,7 @@ public class FeedController implements Controller {
 			default:
 				break;
 		}
-		Collections.sort(filtered, Conference.confDateComparator);
+		Collections.sort(filtered, Test.confDateComparator);
 		int howManyConferencesToShow = 0;
 
 		if (numberComboBoxValue.equals("..."))
@@ -254,15 +254,15 @@ public class FeedController implements Controller {
 					: Integer.parseInt(numberComboBoxValue));
 		}
 
-		return new ArrayList<Conference>(
+		return new ArrayList<Test>(
 				filtered.subList(0, howManyConferencesToShow > 0 ? howManyConferencesToShow : 0));
 	}
 
-	public void fillListViewWithSelectedDaysConferences(LocalDate selectedDate, ArrayList<Conference> feed, TabPane tp,
+	public void fillListViewWithSelectedDaysConferences(LocalDate selectedDate, ArrayList<Test> feed, TabPane tp,
 			ListView<Label> listOfSelectedDaysEvents, boolean showDate, String numberCBvalue) {
-		ArrayList<Conference> selectedDayConferences = new ArrayList<Conference>();
+		ArrayList<Test> selectedDayConferences = new ArrayList<Test>();
 		listOfSelectedDaysEvents.getItems().clear();
-		for (Conference c : feed) {
+		for (Test c : feed) {
 			if (c.getStartTime().toLocalDate().equals(selectedDate)) {
 				selectedDayConferences.add(c);
 			}
@@ -273,14 +273,14 @@ public class FeedController implements Controller {
 		}
 	}
 
-	public void fillListWithLabels(ListView<Label> lv, ArrayList<Conference> cs, TabPane tp, ConferenceFilter cf,
+	public void fillListWithLabels(ListView<Label> lv, ArrayList<Test> cs, TabPane tp, ConferenceFilter cf,
 			int charLimit, boolean showDate, String numberCBvalue) {
-		ArrayList<Conference> filtered = filterFeed(cs, cf, numberCBvalue);
+		ArrayList<Test> filtered = filterFeed(cs, cf, numberCBvalue);
 		ObservableList<Label> ol = FXCollections.observableArrayList();
 		lv.getItems().clear();
 		Label label = null;
 
-		for (Conference c : filtered) {
+		for (Test c : filtered) {
 			String title = c.getName();
 			if (showDate) {
 				title += " (" + c.getDate() + ")";
@@ -306,14 +306,6 @@ public class FeedController implements Controller {
 
 				case ORGANIZER:
 					label.setStyle(myConferencesStyle + "-fx-text-fill: #13366C;");
-					break;
-
-				case PRELECTOR:
-					label.setStyle(myConferencesStyle + "-fx-text-fill: #A5BEE9;");
-					break;
-
-				case SPONSOR:
-					label.setStyle(myConferencesStyle + "-fx-text-fill: #485E7F;");
 					break;
 
 				case PENDING:
@@ -386,7 +378,7 @@ public class FeedController implements Controller {
 		return postsDifferentFromCurrent;
 	}
 
-	private boolean updateForumsListViewWithPosts(ListView<TextFlow> lv, Conference c) {
+	private boolean updateForumsListViewWithPosts(ListView<TextFlow> lv, Test c) {
 		ArrayList<Post> newPosts = reqForumsFeed(ApplicationController.currentUser.getId(), c.getId(), lv);
 		if (newPosts.size() > 0) {
 			ObservableList<TextFlow> existingPosts = lv.getItems();
@@ -445,7 +437,7 @@ public class FeedController implements Controller {
 		}
 	}
 
-	private void updateConfDescriptionScrollPane(ScrollPane scPane, Conference c) {
+	private void updateConfDescriptionScrollPane(ScrollPane scPane, Test c) {
 		// TextFlow is built from many Text objects (which can have different
 		// styles)
 		TextFlow flow = new TextFlow();
@@ -461,21 +453,33 @@ public class FeedController implements Controller {
 				// For content (text of description etc.)
 				sectionContentStyle = new String();
 
-		String[] sectionNames = new String[] { "Temat:\n", "\n\nOrganizatorzy:\n", "\nCzas rozpoczęcia:\n",
-				"\n\nCzas zakończenia:\n", "\n\nMiejsce:\n", "\n\nPlan:\n", "\n\nOpis:\n",
-				"\n\nUczestnicy: (wg roli)\n" };
+		String[] sectionNames = new String[] { 
+			"Kategoria:", 
+			"\n\nOrganizatorzy:\n", 
+			"\n\nCzas rozpoczęcia:\n",
+			"\n\nCzas zakończenia:\n", 
+			"\n\nIlość pytań:\n", 
+			"\n\nIlość możliwych odpowiedzi:\n", 
+			"\n\nOpis:\n",
+			"\n\nUczestnicy: (wg roli)\n"
+		};
 
-		String[] sectionContents = new String[] { c.getSubject(), c.getOrganizersDescription(),
-				c.getStartTime().toString().replace("T", ", godz. "),
-				c.getEndTime().toString().replace("T", ", godz. "), c.getPlace(), c.getAgenda(), c.getDescription(),
-				c.getAllParticipantsListStr() };
+		String[] sectionContents = new String[] {
+			c.getCategory(), c.getOrganizersDescription(),
+			c.getStartTime().toString().replace("T", ", godz. "),
+			c.getEndTime().toString().replace("T", ", godz. "),
+			String.valueOf(c.getnOfQuestions()),
+			String.valueOf(c.getnOfAnswers()),
+			c.getDescription(),
+			c.getAllParticipantsListStr()
+		};
 
 		for (int i = 0; i < sectionContents.length; ++i) {
 			// Label/section name:
 			Text currentSectionTitle = new Text(sectionNames[i]);
 			currentSectionTitle.setStyle(sectionNameStyle);
 			confDescriptionSections.add(currentSectionTitle);
-
+			
 			// Content:
 			Text currentSectionContent = new Text(sectionContents[i]);
 			currentSectionContent.setStyle(sectionContentStyle);
@@ -489,14 +493,14 @@ public class FeedController implements Controller {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void refreshConferenceTab(TabPane tp, Integer tabsId, ArrayList<Conference> confPool) {
-		Conference c = null;
+	public void refreshConferenceTab(TabPane tp, Integer tabsId, ArrayList<Test> confPool) {
+		Test c = null;
 		// tabsId could be null if ApplicationController tried to refresh forum
 		// but there weren't any tabs selected
 		if (tabsId == null) {
 			return;
 		}
-		for (Conference fromPool : confPool) {
+		for (Test fromPool : confPool) {
 			if (fromPool.getId() == tabsId) {
 				c = fromPool;
 				break;
@@ -524,9 +528,7 @@ public class FeedController implements Controller {
 
 			switch (ApplicationController.usersRoleOnConference(ApplicationController.currentUser, c.getId())) {
 				case PARTICIPANT:
-				case ORGANIZER:
-				case PRELECTOR:
-				case SPONSOR: {
+				case ORGANIZER: {
 					ListView<TextFlow> forumsListView = null;
 					/*
 					 * if there's no forum's list view and there should be,
@@ -566,7 +568,7 @@ public class FeedController implements Controller {
 		}
 	}
 
-	public void refreshConferenceTabs(TabPane tp, ArrayList<Conference> confPool) {
+	public void refreshConferenceTabs(TabPane tp, ArrayList<Test> confPool) {
 		try {
 			for (Iterator<Tab> iterator = tp.getTabs().iterator(); iterator.hasNext();) {
 				Tab t = iterator.next();
@@ -580,12 +582,12 @@ public class FeedController implements Controller {
 		}
 	}
 
-	public void openConferenceTab(TabPane tp, ArrayList<Conference> confPool) {
+	public void openConferenceTab(TabPane tp, ArrayList<Test> confPool) {
 		Integer currId = getSelectedConferenceId();
 		if (!eachConferencesPosts.containsKey(currId)) {
 			eachConferencesPosts.put(currId, new HashMap<Integer, Post>());
 			eachConferencesPosts.get(currId).clear();
-			for (Conference c : confPool) {
+			for (Test c : confPool) {
 				if (c.getId() == currId) {
 					Tab tab = new Tab();
 					tab.setOnClosed(new EventHandler<Event>() {

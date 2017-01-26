@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
+import javax.swing.plaf.synth.SynthSeparatorUI;
+
 import oracle.jdbc.pool.OracleDataSource;
 import testGen.model.User.UsersRole;
 
@@ -47,7 +49,8 @@ public class DbConnection {
 	 * @return user if matching pair is found, if not: -1
 	 */
 	public User getUser(String login, String password) {
-		String loginQuery = "select ID_UZYT, LOGIN, IMIE, NAZWISKO"
+
+		String loginQuery = "select ID_UZYT, LOGIN, IMIE, NAZWISKO "
 				+ " from UZYTKOWNICY where LOGIN = (?) and HASLO = (?)";
 		
 		Integer id = null;
@@ -707,6 +710,31 @@ public class DbConnection {
 			e.printStackTrace();
 		}
 		return ret;
+	}
+	
+	public ArrayList<Category> fetchAllCategories() {
+		String fetchCategoriesQuery = "select ID_KAT, NAZWA_KAT from KATEGORIE";
+		ArrayList<Category> categories = new ArrayList<Category>();
+		
+		Integer catId = null;
+		String catName = null;
+		
+		try {
+			PreparedStatement pstmt = conn.prepareStatement(fetchCategoriesQuery);
+			ResultSet rs = pstmt.executeQuery();
+			
+			while (rs.next()) {
+				catId = rs.getInt(1);
+				catName = rs.getString(2);
+
+				categories.add(new Category(catId, catName));
+			}
+			pstmt.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return categories;
 	}
 
 	public ArrayList<Test> fetchTestFeed() {

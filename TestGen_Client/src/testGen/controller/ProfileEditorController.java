@@ -21,9 +21,7 @@ public class ProfileEditorController implements Controller {
 	@FXML private TextField surnameField;
 	@FXML private TextField currentPasswordField;
 	@FXML private TextField newPasswordField;
-	@FXML private TextField emailField;
 	@FXML private TextField newPasswordRepeatField;
-	@FXML private TextField organizationField;
 	@FXML private TextField confirmLogin;
 	private String login;
 	private String currentPassword;
@@ -42,8 +40,6 @@ public class ProfileEditorController implements Controller {
 
 		setTextField(nameField, ApplicationController.currentUser.getName());
 		setTextField(surnameField, ApplicationController.currentUser.getSurname());
-		setTextField(emailField, ApplicationController.currentUser.getEmail());
-		setTextField(organizationField, ApplicationController.currentUser.getOrganization());
 	}
 
 	@FXML public void initialize() {
@@ -58,8 +54,6 @@ public class ProfileEditorController implements Controller {
 		String reNewPassword = newPasswordField.getText();
 		String name = nameField.getText();
 		String surname = surnameField.getText();
-		String email = emailField.getText();
-		String organization = organizationField.getText();
 
 		if (newPassword.equals(reNewPassword) && (newPassword.length() >= 6 || newPassword.length() == 0)) {
 			/*
@@ -74,8 +68,7 @@ public class ProfileEditorController implements Controller {
 				newPassword = null;
 				reNewPassword = null;
 			}
-			User u = new User(ApplicationController.currentUser.getId(), login, 
-					newPassword, name, surname, email, organization);
+			User u = new User(ApplicationController.currentUser.getId(), login, newPassword, name, surname);
 			SocketEvent e = new SocketEvent("reqUpdateProfile", u, currentPassword);
 
 			NetworkConnection.sendSocketEvent(e);

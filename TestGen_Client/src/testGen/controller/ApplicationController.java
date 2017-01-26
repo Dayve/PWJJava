@@ -38,7 +38,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import testGen.Client;
-import testGen.model.Conference;
+import testGen.model.Test;
 import testGen.model.Controller;
 import testGen.model.NetworkConnection;
 import testGen.model.SocketEvent;
@@ -260,8 +260,8 @@ public class ApplicationController implements Controller {
 	}
 
 	public static UsersRole usersRoleOnConference(User user, Integer conferenceId) {
-		Conference conference = null;
-		for(Conference c : fc.getFeed()) {
+		Test conference = null;
+		for(Test c : fc.getFeed()) {
 			if(conferenceId.equals(c.getId())) {
 				conference = c;
 			}
@@ -273,14 +273,6 @@ public class ApplicationController implements Controller {
 		for (User u : conference.getOrganizers()) {
 			if (u.getId().equals(user.getId()))
 				return UsersRole.ORGANIZER;
-		}
-		for (User u : conference.getPrelectors()) {
-			if (u.getId().equals(user.getId()))
-				return UsersRole.PRELECTOR;
-		}
-		for (User u : conference.getSponsors()) {
-			if (u.getId().equals(user.getId()))
-				return UsersRole.SPONSOR;
 		}
 		for (User u : conference.getPending()) {
 			if (u.getId().equals(user.getId()))
@@ -322,7 +314,7 @@ public class ApplicationController implements Controller {
 		} else if (feedPeriodCB.equals("Nadchodzące konferencje")) {
 			filter = ConferenceFilter.FUTURE;
 		}
-		ArrayList<Conference> filtered = fc.filterFeed(fc.getFeed(), filter, conferenceFeedNumberCB.getValue());
+		ArrayList<Test> filtered = fc.filterFeed(fc.getFeed(), filter, conferenceFeedNumberCB.getValue());
 		Platform.runLater(new Runnable() {
 			@Override public void run() {
 				fc.fillListWithLabels(conferenceFeedList, filtered, eventDetailsTP, filter, CHAR_LIMIT_IN_TITLEPANE, 
@@ -339,7 +331,7 @@ public class ApplicationController implements Controller {
 		// look for conference thats id is clicked
 		if (selectedConfId != null) {
 			try {
-				Conference selectedConf = fc.getSelectedConference();
+				Test selectedConf = fc.getSelectedConference();
 				UsersRole role = usersRoleOnConference(currentUser, selectedConfId);
 				switch (role) {
 					case ORGANIZER: {
@@ -359,9 +351,7 @@ public class ApplicationController implements Controller {
 						forumsMessage.setVisible(true);
 						break;
 					}
-					case PRELECTOR:
-					case PARTICIPANT:
-					case SPONSOR: {
+					case PARTICIPANT: {
 						removeConfBtn.setDisable(true);
 						joinLeaveManageConfBtn.setDisable(false);
 						filesMenuButton.setDisable(false);
@@ -416,14 +406,14 @@ public class ApplicationController implements Controller {
 	// compares it with current data and if there is difference, updates
 	// information
 	@SuppressWarnings("unchecked") @FXML public void reqConferenceFeed() {
-		SocketEvent e = new SocketEvent("reqConferenceFeed");
+		SocketEvent e = new SocketEvent("reqTestFeed");
 		NetworkConnection.sendSocketEvent(e);
-		SocketEvent res = NetworkConnection.rcvSocketEvent("updateConferenceFeed");
+		SocketEvent res = NetworkConnection.rcvSocketEvent("updateTestFeed");
 
 		String eventName = res.getName();
-		ArrayList<Conference> tempFeed;
+		ArrayList<Test> tempFeed;
 
-		if (eventName.equals("updateConferenceFeed")) {
+		if (eventName.equals("updateTestFeed")) {
 			// get temp feed to compare it with current one
 			tempFeed = res.getObject(ArrayList.class);
 			// fc.setFeed(tempFeed);
@@ -434,7 +424,7 @@ public class ApplicationController implements Controller {
 				// content
 				Platform.runLater(new Runnable() {
 					@Override public void run() {
-						ArrayList<Conference> feed = fc.getFeed();
+						ArrayList<Test> feed = fc.getFeed();
 						fc.refreshConferenceTabs(eventDetailsTP, feed);
 						// fill FeedBox and Calendar in JavaFX UI Thread
 						checkUsersParticipation();
@@ -462,11 +452,11 @@ public class ApplicationController implements Controller {
 			filter = ConferenceFilter.FUTURE;
 		}
 		
-		ArrayList<Conference> filteringResults = new ArrayList<Conference>();
+		ArrayList<Test> filteringResults = new ArrayList<Test>();
 
-		for(Conference conference : fc.filterFeed(fc.getFeed(), filter, conferenceFeedNumberCB.getValue())) {
+		for(Test conference : fc.filterFeed(fc.getFeed(), filter, conferenceFeedNumberCB.getValue())) {
 			if(conference.getName().toLowerCase().contains(searchBoxContent.toLowerCase()) ||
-				conference.getSubject().toLowerCase().contains(searchBoxContent.toLowerCase()))
+				conference.getCategory().toLowerCase().contains(searchBoxContent.toLowerCase()))
 			{
 				filteringResults.add(conference);
 			}
