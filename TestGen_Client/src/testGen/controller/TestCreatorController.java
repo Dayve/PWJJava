@@ -122,17 +122,17 @@ public class TestCreatorController implements Controller {
 			String eventName = res.getName();
 
 			if (eventName.equals("addTestSucceeded")) {
-				message = "Dodano konferencję.";
+				message = "Dodano nowy test do bazy danych.";
 				ApplicationController.makeRequest(RequestType.UPDATE_TEST_FEED);
 			}
 			else if (eventName.equals("addTestFailed")) {
 				message = res.getObject(String.class);
 			}
 			else {
-				message = "Nie udało się dodać konferencji. Serwer nie odpowiada.";
+				message = "Nie udało się dodać testu. Serwer nie odpowiada.";
 			}
 		} else {
-			message = "Wypełnij wszystkie pola z godziną i minutą.";
+			message = "Proszę wypełnić wszystkie pola z godziną i minutą oraz upewnić się, że wybrano kategorię.";
 		}
 		Platform.runLater(new Runnable() {
 			@Override public void run() {

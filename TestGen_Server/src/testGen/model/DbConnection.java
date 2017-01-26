@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
+import javax.swing.plaf.synth.SynthSeparatorUI;
+
 import oracle.jdbc.pool.OracleDataSource;
 import testGen.model.User.UsersRole;
 
@@ -296,6 +298,9 @@ public class DbConnection {
 		String insertEndTime = c.getEndTime().toString().replace('T', ' ');
 		
 		try {
+			Statement st = conn.createStatement();
+			st.execute("ALTER SESSION SET nls_date_format='RRRR/MM/DD HH24:MI'");
+			
 			PreparedStatement pstmt = conn.prepareStatement(addTestProcedure);
 			pstmt.setInt(1, c.getFirstOrganizer().getId());
 			pstmt.setString(2, c.getName());
@@ -303,6 +308,10 @@ public class DbConnection {
 			pstmt.setInt(4, c.getnOfQuestions());
 			pstmt.setInt(5, c.getnOfAnswers());
 			pstmt.setString(6, c.getCategory());
+			
+			System.out.println(insertStartTime);
+			System.out.println(insertEndTime);
+			
 			pstmt.setString(7, insertStartTime);
 			pstmt.setString(8, insertEndTime);
 			pstmt.executeUpdate();
@@ -319,7 +328,7 @@ public class DbConnection {
 	public boolean removeTest(int testId) {
 		boolean succeeded = true;
 
-		String removeTestQuery = "delete from TESTY where ID_TESTU = (?)";
+		String removeTestQuery = "{call remove_test(?)}";
 
 		try {
 			PreparedStatement pstmt = conn.prepareStatement(removeTestQuery);

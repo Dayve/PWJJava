@@ -97,7 +97,7 @@
                   <Insets bottom="5.0" left="2.0" right="2.0" top="5.0" />
                </GridPane.margin>
             </Button>
-            <Button fx:id="removeTestBtn" disable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#removeTestBtn" text="Usuń konferencję" GridPane.columnIndex="3">
+            <Button fx:id="removeTestBtn" disable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#removeTestBtn" text="Usuń test" GridPane.columnIndex="3">
                <font>
                   <Font size="13.0" />
                </font>
@@ -113,7 +113,7 @@
                   <Insets left="2.0" right="2.0" />
                </GridPane.margin>
             </Label>
-            <Button fx:id="filesMenuButton" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#manageFilesBtn" text="Pliki konferencji" GridPane.columnIndex="1">
+            <Button fx:id="filesMenuButton" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#manageFilesBtn" text="Pliki testu" GridPane.columnIndex="1">
                <GridPane.margin>
                   <Insets bottom="5.0" left="2.0" right="2.0" top="5.0" />
                </GridPane.margin>

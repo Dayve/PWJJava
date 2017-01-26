@@ -162,11 +162,11 @@ public class ApplicationController implements Controller {
 
 	// sets up the ComboBoxes allowing user to filter tests
 	private void setupFeedFilterCBs() {
-		ObservableList<String> feedOptions = FXCollections.observableArrayList("Nadchodzące konferencje",
-				"Wszystkie konferencje", "Zakończone konferencje");
+		ObservableList<String> feedOptions = FXCollections.observableArrayList("Nadchodzące testy",
+				"Wszystkie testy", "Zakończone testy");
 
 		testFeedCB.getItems().addAll(feedOptions);
-		testFeedCB.setValue("Nadchodzące konferencje");
+		testFeedCB.setValue("Nadchodzące testy");
 
 		ObservableList<String> feedNumberOptions = FXCollections.observableArrayList("5", "15", "30", "60", "...");
 

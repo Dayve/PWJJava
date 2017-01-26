@@ -1,6 +1,9 @@
 -- RESET SCRIPT FOR PWJJ_DB --
 ------------------------------
 
+-- Set up date format for inserts:
+ALTER SESSION SET nls_date_format='RRRR/MM/DD HH24:MI';
+
 -- Delete every table, procedure and function in schema: -------------------------------------------
 BEGIN
 	FOR cur_rec IN (
@@ -157,6 +160,22 @@ BEGIN
 END;
 /
 
+
+CREATE OR REPLACE PROCEDURE remove_test (
+	targetTestID IN TESTY.ID_TESTU % TYPE
+) AS
+BEGIN
+	DELETE FROM UCZESTNICY WHERE ID_TESTU = targetTestID;
+	DELETE FROM PYTANIA_TESTU WHERE ID_TESTU = targetTestID;
+	DELETE FROM PODEJSCIA WHERE ID_TESTU = targetTestID;
+	DELETE FROM POSTY WHERE ID_TESTU = targetTestID;
+	DELETE FROM PLIKI WHERE ID_TESTU = targetTestID;
+
+	DELETE FROM TESTY WHERE ID_TESTU = targetTestID;
+END;
+/
+
+
 CREATE OR REPLACE PROCEDURE edit_post (
 	postId IN NUMBER,
 	newContent IN VARCHAR2,
@@ -173,10 +192,6 @@ END;
 
 
 -- Populate with data: -----------------------------------------------------------------------------
-
--- select to_char(TO_DATE('2017/01/30 09:10', 'RRRR-MM-DD HH24:MI'), 'RRRR-MM-DD HH24:MI') from dual;
--- select to_char(czas_zakonczenia, 'YYYY-MM-DD HH24:MI') from testy;
-
 INSERT INTO UZYTKOWNICY (ID_UZYT, LOGIN, HASLO, IMIE, NAZWISKO)
 VALUES (null, 'dp', 'a91262282f71bb8488398dcc9202f777d0206664', 'Dawid', 'Przystasz');
 
@@ -186,11 +201,13 @@ VALUES (null, 'tk', '4f8f608ac4aafcbe4fab8dcee1e9c609f99d9332', 'Tomasz', 'Krzyw
 INSERT INTO UZYTKOWNICY (ID_UZYT, LOGIN, HASLO, IMIE, NAZWISKO)
 VALUES (null, 'js', '93f8bb0eb2c659b85694486c41717eaf0fe23cd4', 'Jan', 'Sekułowicz');
 
+
 INSERT INTO KATEGORIE (ID_KAT, NAZWA_KAT)
 VALUES (null, 'Programowanie wysokopoziomowe');
 
 INSERT INTO KATEGORIE (ID_KAT, NAZWA_KAT)
-VALUES (null, 'Historia Polski');
+VALUES (null, 'Historia');
+
 
 BEGIN
 	add_test(
@@ -200,17 +217,22 @@ BEGIN
 		12,
 		4,
 		'Programowanie wysokopoziomowe',
-		TO_DATE('2017/01/31 09:40', '	YYYY-MM-DD HH24:MI'),
+		TO_DATE('2017/01/31 09:40', 'YYYY-MM-DD HH24:MI'),
 		TO_DATE('2017/01/31 11:50', 'YYYY-MM-DD HH24:MI')
 	);
 
 	add_test(
-		1, -- użytkownik 1: dp
+		2, -- użytkownik 2: tk
 		'Test historyczny',
-		'Przykładowy opis testu',
-		8,
+		'Zakres wiedzy wymagany na teście to:
+- II wojna światowa
+- Polska XIX wieku
+- Konflikt izraelsko-arabski
+- Mongolskie inwazje na Japonię
+- Rewolucja przemysłowa XVIII wieku',
+		30,
 		3,
-		'Historia Polski',
+		'Historia',
 		TO_DATE('2017/01/30 09:10', 'YYYY-MM-DD HH24:MI'),
 		TO_DATE('2017/01/30 13:50', 'YYYY-MM-DD HH24:MI')
 	);
