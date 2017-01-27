@@ -277,8 +277,8 @@ public class TestGenServer implements Runnable {
 			}
 		}
 
-		private void handleTestFeed() {
-			ArrayList<Test> testFeed = dbConn.fetchTestFeed();
+		private void handleTestFeed(Integer callerId) {
+			ArrayList<Test> testFeed = dbConn.fetchTestFeed(callerId);
 			SocketEvent se = null;
 
 			// create SocketEvent w ArrayList arg
@@ -592,7 +592,8 @@ public class TestGenServer implements Runnable {
 							break;
 						}
 						case "reqTestFeed": {
-							handleTestFeed();
+							Integer callerId = se.getObject(Integer.class);
+							handleTestFeed(callerId);
 							break;
 						}
 						case "reqAddTest": {

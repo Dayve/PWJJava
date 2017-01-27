@@ -13,7 +13,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import javax.swing.plaf.synth.SynthSeparatorUI;
 
 import com.sun.javafx.scene.control.skin.TableHeaderRow;
 
@@ -41,10 +40,8 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import testGen.Client;
 import testGen.model.Test;
-import testGen.model.Answer;
 import testGen.model.Controller;
 import testGen.model.NetworkConnection;
-import testGen.model.Question;
 import testGen.model.SocketEvent;
 import testGen.model.User;
 import testGen.model.User.UsersRole;
@@ -92,7 +89,6 @@ public class ApplicationController implements Controller {
 		new Thread(() -> reqCurrentUser()).start();
 		setupFeedFilterCBs();
 		setupTabPane();
-		reqTestFeed();
 		setupTimer();
 		setupForumTextArea();
 		setupMonthsYearsCBs();
@@ -100,6 +96,7 @@ public class ApplicationController implements Controller {
 
 		Platform.runLater(new Runnable() {
 			@Override public void run() {
+				reqTestFeed(currentUser.getId());
 				loginLabel.setText(currentUser.getLogin());
 				setupTabResizeEvent();
 			}
@@ -232,7 +229,7 @@ public class ApplicationController implements Controller {
 						fc.refreshTestTab(eventDetailsTP, fc.getSelectedTestId(), fc.getFeed());
 						if (requestQueue.contains(RequestType.UPDATE_TEST_FEED)
 								|| checkedRequestsWithoutUpdate > 10) {
-							reqTestFeed();
+							reqTestFeed(currentUser.getId());
 							checkedRequestsWithoutUpdate = 0;
 							requestQueue.remove(RequestType.UPDATE_TEST_FEED);
 						} else
@@ -408,8 +405,8 @@ public class ApplicationController implements Controller {
 	// requests data about test from the database through the server
 	// compares it with current data and if there is difference, updates
 	// information
-	@SuppressWarnings("unchecked") @FXML public void reqTestFeed() {
-		SocketEvent e = new SocketEvent("reqTestFeed");
+	@SuppressWarnings("unchecked") @FXML public void reqTestFeed(Integer callerId) {
+		SocketEvent e = new SocketEvent("reqTestFeed", callerId);
 		NetworkConnection.sendSocketEvent(e);
 		SocketEvent res = NetworkConnection.rcvSocketEvent("updateTestFeed");
 
@@ -487,8 +484,16 @@ public class ApplicationController implements Controller {
 		}
 	}
 	
-	@FXML private void startIndividualTestBtn() {
-		openNewWindow(applicationWindow, "view/IndividualTestCreatorLayout.fxml", 500, 270, false, "Rozpocznij indywidualny test");
+	public void startIndividualTest() {
+		
+		openNewWindow(applicationWindow, "view/ConductTestLayout.fxml", 
+				800, 500, true, true, "Test indywidualny");
+	}
+	
+	@FXML private void startIndividualTestCreationBtn() {
+		IndividualTestCreatorController.caller = this;
+		openNewWindow(applicationWindow, "view/IndividualTestCreatorLayout.fxml", 
+				500, 270, false, "Rozpocznij indywidualny test");
 	}
 
 	@FXML public void manageTestBtn() {
@@ -541,7 +546,7 @@ public class ApplicationController implements Controller {
 				 "joinTestFailed");
 		String eventName = res.getName();
 		if (eventName.equals("joinTestSucceeded")) {
-			reqTestFeed();
+			reqTestFeed(currentUser.getId());
 			message = "Wysłano prośbę o udział w teście do jej organizatora.";
 		} else {
 			message = "Nie udało się zapisać na test.";
@@ -584,7 +589,7 @@ public class ApplicationController implements Controller {
 		String eventName = res.getName();
 		
 		if (eventName.equals("leaveTestSucceeded")) {
-			reqTestFeed();
+			reqTestFeed(currentUser.getId());
 			message = "Zrezygnowałeś z udziału w teście.";
 		} else {
 			message = "Nie udało się zrezygnować z udziału w teście.";
@@ -618,7 +623,7 @@ public class ApplicationController implements Controller {
 		SocketEvent res = NetworkConnection.rcvSocketEvent("removeTestSucceeded", "removeTestFailed");
 		String eventName = res.getName();
 		if (eventName.equals("removeTestSucceeded")) {
-			reqTestFeed();
+			reqTestFeed(currentUser.getId());
 			message = "Udało się usunąć test.";
 		} else {
 			message = "Nie udało się usunąć testu.";

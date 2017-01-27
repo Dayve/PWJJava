@@ -66,11 +66,11 @@ public class FeedController implements Controller {
 				sendRequestToRemovePost(selectedPostsId);
 			}
 		});
-		
+
 		editMI.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent t) {
-				openModifyPostWindow(mainApplicationWindow, 
-						eachTestsPosts.get(selectedTestId).get(selectedPostsId));
+				openModifyPostWindow(mainApplicationWindow, eachTestsPosts
+						.get(selectedTestId).get(selectedPostsId));
 			}
 		});
 	}
@@ -81,8 +81,7 @@ public class FeedController implements Controller {
 		tp.getSelectionModel().select(null);
 		tp.getSelectionModel().select(t);
 	}
-	
-	
+
 	private void getLastPostsId(ListView<TextFlow> forumsListView) {
 		ObservableList<TextFlow> ol = forumsListView.getItems();
 		if (ol.size() > 0) {
@@ -99,7 +98,8 @@ public class FeedController implements Controller {
 					if (me.getButton() == MouseButton.SECONDARY) {
 						selectedPostsId = Integer.parseInt(tf.getId());
 						User currUser = ApplicationController.currentUser;
-						UsersRole role = ApplicationController.usersRoleOnTheTest(currUser, selectedTestId);
+						UsersRole role = ApplicationController
+								.usersRoleOnTheTest(currUser, selectedTestId);
 						/*
 						 * enable/disable context menu depending on user's role
 						 * organizer - enable edit & delete all posts
@@ -113,7 +113,8 @@ public class FeedController implements Controller {
 								break;
 							}
 							default: {
-								Integer postsAuthorsId = eachTestsPosts.get(selectedTestId)
+								Integer postsAuthorsId = eachTestsPosts
+										.get(selectedTestId)
 										.get(selectedPostsId).getAuthorsId();
 								// current user is author of the post
 								if (postsAuthorsId.equals(currUser.getId())) {
@@ -155,7 +156,8 @@ public class FeedController implements Controller {
 
 	public Test getSelectedTest() {
 		if (selectedTestId != null) {
-			return feed.stream().filter(c -> c.getId() == selectedTestId).findFirst().get();
+			return feed.stream().filter(c -> c.getId() == selectedTestId)
+					.findFirst().get();
 		} else {
 			return null;
 		}
@@ -174,10 +176,12 @@ public class FeedController implements Controller {
 	}
 
 	private void sendRequestToRemovePost(Integer givenPostID) {
-		SocketEvent se = new SocketEvent("reqestRemovingChosenPost", givenPostID);
+		SocketEvent se = new SocketEvent("reqestRemovingChosenPost",
+				givenPostID);
 		NetworkConnection.sendSocketEvent(se);
 
-		SocketEvent res = NetworkConnection.rcvSocketEvent("postRemoved", "postRemovingError");
+		SocketEvent res = NetworkConnection.rcvSocketEvent("postRemoved",
+				"postRemovingError");
 
 		String eventName = res.getName();
 		final String message;
@@ -215,24 +219,28 @@ public class FeedController implements Controller {
 
 	public ArrayList<Test> filterFeed(ArrayList<Test> feed, TestFilter cf,
 			String numberComboBoxValue) {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+		DateTimeFormatter formatter = DateTimeFormatter
+				.ofPattern("yyyy-MM-dd HH:mm");
 		LocalDateTime now = LocalDateTime.now();
 		now.format(formatter);
 		ArrayList<Test> filtered = new ArrayList<Test>();
 		switch (cf) {
 			case PAST: {
-				filtered = (ArrayList<Test>) feed.stream().filter(c -> c.getEndTime().isBefore(now))
+				filtered = (ArrayList<Test>) feed.stream()
+						.filter(c -> c.getEndTime().isBefore(now))
 						.collect(Collectors.toList());
 				break;
 			}
 			case FUTURE: {
-				filtered = (ArrayList<Test>) feed.stream().filter(c -> c.getStartTime().isAfter(now))
+				filtered = (ArrayList<Test>) feed.stream()
+						.filter(c -> c.getStartTime().isAfter(now))
 						.collect(Collectors.toList());
 				break;
 			}
 			case ONGOING: {
 				filtered = (ArrayList<Test>) feed.stream()
-						.filter(c -> c.getStartTime().isAfter(now) && c.getEndTime().isBefore(now))
+						.filter(c -> c.getStartTime().isAfter(now)
+								&& c.getEndTime().isBefore(now))
 						.collect(Collectors.toList());
 				break;
 			}
@@ -250,16 +258,19 @@ public class FeedController implements Controller {
 		if (numberComboBoxValue.equals("..."))
 			howManyTestsToShow = filtered.size();
 		else {
-			howManyTestsToShow = (filtered.size() < Integer.parseInt(numberComboBoxValue) ? filtered.size()
-					: Integer.parseInt(numberComboBoxValue));
+			howManyTestsToShow = (filtered.size() < Integer
+					.parseInt(numberComboBoxValue) ? filtered.size()
+							: Integer.parseInt(numberComboBoxValue));
 		}
 
-		return new ArrayList<Test>(
-				filtered.subList(0, howManyTestsToShow > 0 ? howManyTestsToShow : 0));
+		return new ArrayList<Test>(filtered.subList(0,
+				howManyTestsToShow > 0 ? howManyTestsToShow : 0));
 	}
 
-	public void fillListViewWithSelectedDaysTests(LocalDate selectedDate, ArrayList<Test> feed, TabPane tp,
-			ListView<Label> listOfSelectedDaysEvents, boolean showDate, String numberCBvalue) {
+	public void fillListViewWithSelectedDaysTests(LocalDate selectedDate,
+			ArrayList<Test> feed, TabPane tp,
+			ListView<Label> listOfSelectedDaysEvents, boolean showDate,
+			String numberCBvalue) {
 		ArrayList<Test> selectedDayTests = new ArrayList<Test>();
 		listOfSelectedDaysEvents.getItems().clear();
 		for (Test c : feed) {
@@ -268,24 +279,28 @@ public class FeedController implements Controller {
 			}
 		}
 		if (selectedDayTests != null) {
-			fillListWithLabels(listOfSelectedDaysEvents, selectedDayTests, tp, TestFilter.ALL,
-					ApplicationController.CHAR_LIMIT_IN_TITLEPANE, showDate, numberCBvalue);
+			fillListWithLabels(listOfSelectedDaysEvents, selectedDayTests, tp,
+					TestFilter.ALL,
+					ApplicationController.CHAR_LIMIT_IN_TITLEPANE, showDate,
+					numberCBvalue);
 		}
 	}
 
-	public void fillListWithLabels(ListView<Label> lv, ArrayList<Test> cs, TabPane tp, TestFilter cf,
+	public void fillListWithLabels(ListView<Label> lv, ArrayList<Test> tests, TabPane tp, TestFilter testFilter,
 			int charLimit, boolean showDate, String numberCBvalue) {
-		ArrayList<Test> filtered = filterFeed(cs, cf, numberCBvalue);
+		ArrayList<Test> filtered = filterFeed(tests, testFilter, numberCBvalue);
 		ObservableList<Label> ol = FXCollections.observableArrayList();
 		lv.getItems().clear();
+		
 		Label label = null;
-
-		for (Test c : filtered) {
-			String title = c.getName();
+		LocalDateTime now = LocalDateTime.now();
+		
+		for (Test oneOfFilteredTests : filtered) {
+			String title = oneOfFilteredTests.getName();
 			if (showDate) {
-				title += " (" + c.getDate() + ")";
+				title += " (" + oneOfFilteredTests.getDate() + ")";
 			}
-			Integer currId = c.getId();
+			Integer currId = oneOfFilteredTests.getId();
 			label = new Label(addNLsIfTooLong(title, charLimit));
 			label.setFont(Font.font("Inconsolata", 13));
 
@@ -294,28 +309,38 @@ public class FeedController implements Controller {
 			label.setOnMouseClicked(new EventHandler<MouseEvent>() {
 				public void handle(MouseEvent t) {
 					setSelectedTestId(currId);
-					openTestTab(tp, cs);
+					openTestTab(tp, tests);
 				}
 			});
 
 			String myTestsStyle = "-fx-font-weight: bold;";
-			switch (ApplicationController.usersRoleOnTheTest(ApplicationController.currentUser, c.getId())) {
-				case PARTICIPANT:
-					label.setStyle(myTestsStyle);
-					break;
+			
+			// first check if test has already ended or did not begin yet
+			if(oneOfFilteredTests.getStartTime().isAfter(now)
+					|| oneOfFilteredTests.getEndTime().isBefore(now)) {
+				switch (ApplicationController.usersRoleOnTheTest(ApplicationController.currentUser, oneOfFilteredTests.getId())) {
+					case PARTICIPANT:
+						label.setStyle(myTestsStyle);
+						break;
 
-				case ORGANIZER:
-					label.setStyle(myTestsStyle + "-fx-text-fill: #13366C;");
-					break;
+					case ORGANIZER:
+						label.setStyle(myTestsStyle + "-fx-text-fill: #13366C;");
+						break;
 
-				case PENDING:
-					label.setStyle(myTestsStyle + "-fx-text-fill: #A7A7A7;");
-					break;
+					case PENDING:
+						label.setStyle(myTestsStyle + "-fx-text-fill: #A7A7A7;");
+						break;
 
-				case NONE:
-//					label.setStyle("-fx-background-color: ;");
-					break;
+					case NONE:
+						break;
+				}
+			} else {
+				// if test has begun and did not end
+				label.setText(label.getText() + " (trwa)");
+				label.setStyle(myTestsStyle + "-fx-text-fill: #E81111;");
 			}
+			
+			
 			ol.add(label);
 		}
 		lv.setItems(ol);
@@ -333,17 +358,20 @@ public class FeedController implements Controller {
 		}
 	}
 
-	@SuppressWarnings("unchecked") private ArrayList<Post> reqForumsFeed(Integer usersId, Integer testsId, ListView<TextFlow> lv) {
+	@SuppressWarnings("unchecked") private ArrayList<Post> reqForumsFeed(
+			Integer usersId, Integer testsId, ListView<TextFlow> lv) {
 		ArrayList<Post> forumsFeed = null;
 		ArrayList<Post> postsDifferentFromCurrent = new ArrayList<Post>();
 		ArrayList<Integer> userIdTestId = new ArrayList<Integer>();
-		HashMap<Integer, Post> thisTestPosts = eachTestsPosts.get(selectedTestId);
+		HashMap<Integer, Post> thisTestPosts = eachTestsPosts
+				.get(selectedTestId);
 		userIdTestId.add(usersId);
 		userIdTestId.add(testsId);
 		SocketEvent se = new SocketEvent("reqTestsPosts", userIdTestId);
 
 		NetworkConnection.sendSocketEvent(se);
-		SocketEvent res = NetworkConnection.rcvSocketEvent("sendForumFeedSucceeded", "sendForumFeedFailed");
+		SocketEvent res = NetworkConnection.rcvSocketEvent(
+				"sendForumFeedSucceeded", "sendForumFeedFailed");
 		String eventName = res.getName();
 		if (eventName.equals("sendForumFeedSucceeded")) {
 			forumsFeed = res.getObject(ArrayList.class);
@@ -355,7 +383,8 @@ public class FeedController implements Controller {
 				Post p = forumsFeed.get(j);
 
 				if (thisTestPosts.containsKey(p.getPostsId())) {
-					if (!p.getContent().equals(thisTestPosts.get(p.getPostsId()).getContent())) {
+					if (!p.getContent().equals(
+							thisTestPosts.get(p.getPostsId()).getContent())) {
 						postsDifferentFromCurrent.add(p);
 						// replace a post with the one with updated content
 						thisTestPosts.clear();
@@ -369,7 +398,8 @@ public class FeedController implements Controller {
 					thisTestPosts.put(p.getPostsId(), p);
 				}
 			}
-			if(thisTestPosts.size() > forumsFeed.size() + postsDifferentFromCurrent.size()) {
+			if (thisTestPosts.size() > forumsFeed.size()
+					+ postsDifferentFromCurrent.size()) {
 				thisTestPosts.clear();
 				lv.getItems().clear();
 				return reqForumsFeed(usersId, testsId, lv);
@@ -378,8 +408,10 @@ public class FeedController implements Controller {
 		return postsDifferentFromCurrent;
 	}
 
-	private boolean updateForumsListViewWithPosts(ListView<TextFlow> lv, Test c) {
-		ArrayList<Post> newPosts = reqForumsFeed(ApplicationController.currentUser.getId(), c.getId(), lv);
+	private boolean updateForumsListViewWithPosts(ListView<TextFlow> lv,
+			Test c) {
+		ArrayList<Post> newPosts = reqForumsFeed(
+				ApplicationController.currentUser.getId(), c.getId(), lv);
 		if (newPosts.size() > 0) {
 			ObservableList<TextFlow> existingPosts = lv.getItems();
 			ArrayList<User> selectedTestUsersList = new ArrayList<User>();
@@ -395,19 +427,21 @@ public class FeedController implements Controller {
 																	// name
 					regularStyle = new String(); // For content and date
 
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+			DateTimeFormatter formatter = DateTimeFormatter
+					.ofPattern("dd-MM-yyyy HH:mm:ss");
 			for (int j = newPosts.size() - 1; j >= 0; j--) {
 				Post p = newPosts.get(j);
-				// if post already exists, get it's handle and modify it instead of adding
+				// if post already exists, get it's handle and modify it instead
+				// of adding
 				TextFlow existingTF = null;
 				String stringPostsId = p.getPostsId().toString();
-				for(TextFlow tf: existingPosts) {
-					if(tf.getId().equals(stringPostsId)) {
+				for (TextFlow tf : existingPosts) {
+					if (tf.getId().equals(stringPostsId)) {
 						existingTF = tf;
 						break;
 					}
 				}
-				
+
 				// add date and \n (regular font)
 				Text date = new Text(p.getTime().format(formatter) + "\n");
 				date.setStyle(regularStyle);
@@ -423,7 +457,7 @@ public class FeedController implements Controller {
 					TextFlow flow = new TextFlow(date, author, content);
 					flow.setId(p.getPostsId().toString());
 					flow.setPrefWidth(lv.getWidth());
-					if(existingTF != null) {
+					if (existingTF != null) {
 						existingTF = new TextFlow(flow);
 					} else {
 						lv.getItems().add(flow);
@@ -453,33 +487,26 @@ public class FeedController implements Controller {
 				// For content (text of description etc.)
 				sectionContentStyle = new String();
 
-		String[] sectionNames = new String[] { 
-			"Kategoria: ", 
-			"\n\nOrganizatorzy:\n", 
-			"\nCzas rozpoczęcia:\n",
-			"\n\nCzas zakończenia:\n", 
-			"\n\nLiczba pytań: ", 
-			"\n\nLiczba możliwych odpowiedzi: ", 
-			"\n\nOpis:\n",
-			"\n\nUczestnicy:\n"
-		};
+		String[] sectionNames = new String[] { "Kategoria: ",
+				"\n\nOrganizatorzy:\n", "\nCzas rozpoczęcia:\n",
+				"\n\nCzas zakończenia:\n", "\n\nLiczba pytań: ",
+				"\n\nLiczba możliwych odpowiedzi: ", "\n\nOpis:\n",
+				"\n\nUczestnicy:\n" };
 
-		String[] sectionContents = new String[] {
-			c.getCategory(), c.getOrganizersDescription(),
-			c.getStartTime().toString().replace("T", ", godz. "),
-			c.getEndTime().toString().replace("T", ", godz. "),
-			String.valueOf(c.getnOfQuestions()),
-			String.valueOf(c.getnOfAnswers()),
-			c.getDescription(),
-			c.getAllParticipantsListStr()
-		};
+		String[] sectionContents = new String[] { c.getCategory(),
+				c.getOrganizersDescription(),
+				c.getStartTime().toString().replace("T", ", godz. "),
+				c.getEndTime().toString().replace("T", ", godz. "),
+				String.valueOf(c.getnOfQuestions()),
+				String.valueOf(c.getnOfAnswers()), c.getDescription(),
+				c.getAllParticipantsListStr() };
 
 		for (int i = 0; i < sectionContents.length; ++i) {
 			// Label/section name:
 			Text currentSectionTitle = new Text(sectionNames[i]);
 			currentSectionTitle.setStyle(sectionNameStyle);
 			testDescriptionSections.add(currentSectionTitle);
-			
+
 			// Content:
 			Text currentSectionContent = new Text(sectionContents[i]);
 			currentSectionContent.setStyle(sectionContentStyle);
@@ -492,8 +519,8 @@ public class FeedController implements Controller {
 		scPane.setContent(flow);
 	}
 
-	@SuppressWarnings("unchecked")
-	public void refreshTestTab(TabPane tp, Integer tabsId, ArrayList<Test> testPool) {
+	@SuppressWarnings("unchecked") public void refreshTestTab(TabPane tp,
+			Integer tabsId, ArrayList<Test> testPool) {
 		Test c = null;
 		// tabsId could be null if ApplicationController tried to refresh forum
 		// but there weren't any tabs selected
@@ -512,8 +539,8 @@ public class FeedController implements Controller {
 			openedTabsTestsIds.remove(tabsId);
 			eachTestsPosts.remove(tabsId);
 		} else {
-			if(openedTabsTestsIds.containsKey(tabsId) && 
-					!eachTestsPosts.containsKey(tabsId)) {
+			if (openedTabsTestsIds.containsKey(tabsId)
+					&& !eachTestsPosts.containsKey(tabsId)) {
 				eachTestsPosts.put(tabsId, new HashMap<Integer, Post>());
 			}
 			ScrollPane confInfoPane = null;
@@ -526,7 +553,8 @@ public class FeedController implements Controller {
 			}
 			updateTestDescriptionScrollPane(confInfoPane, c);
 
-			switch (ApplicationController.usersRoleOnTheTest(ApplicationController.currentUser, c.getId())) {
+			switch (ApplicationController.usersRoleOnTheTest(
+					ApplicationController.currentUser, c.getId())) {
 				case PARTICIPANT:
 				case ORGANIZER: {
 					ListView<TextFlow> forumsListView = null;
@@ -539,7 +567,8 @@ public class FeedController implements Controller {
 						vb.getChildren().add(forumsListView);
 					} else if (vb.getChildren().size() == 2) {
 						// just get existing forum to update later
-						forumsListView = (ListView<TextFlow>) vb.getChildren().get(1);
+						forumsListView = (ListView<TextFlow>) vb.getChildren()
+								.get(1);
 					}
 					getLastPostsId(forumsListView); // update last post's id
 //					for(TextFlow tf: forumsListView.getItems()) {
@@ -547,7 +576,8 @@ public class FeedController implements Controller {
 //					}
 					// update and check if it succeeded
 					if (updateForumsListViewWithPosts(forumsListView, c)) {
-						forumsListView.scrollTo(forumsListView.getItems().size());
+						forumsListView
+								.scrollTo(forumsListView.getItems().size());
 						// scroll to the last msg set context menus on text
 						// flows
 						setupForumEdition(forumsListView);
@@ -570,7 +600,8 @@ public class FeedController implements Controller {
 
 	public void refreshTestTabs(TabPane tp, ArrayList<Test> confPool) {
 		try {
-			for (Iterator<Tab> iterator = tp.getTabs().iterator(); iterator.hasNext();) {
+			for (Iterator<Tab> iterator = tp.getTabs().iterator(); iterator
+					.hasNext();) {
 				Tab t = iterator.next();
 				refreshTestTab(tp, Integer.parseInt(t.getId()), confPool);
 			}
@@ -605,13 +636,17 @@ public class FeedController implements Controller {
 					ListView<TextFlow> forumsListView;
 					double paneSize = tp.getHeight();
 					UsersRole currUsersRole = ApplicationController
-							.usersRoleOnTheTest(ApplicationController.currentUser, c.getId());
-					if (currUsersRole != UsersRole.NONE && currUsersRole != UsersRole.PENDING) {
+							.usersRoleOnTheTest(
+									ApplicationController.currentUser,
+									c.getId());
+					if (currUsersRole != UsersRole.NONE
+							&& currUsersRole != UsersRole.PENDING) {
 						paneSize /= 2;
 						forumsListView = new ListView<TextFlow>();
 						updateForumsListViewWithPosts(forumsListView, c);
 						forumsListView.setPrefHeight(paneSize);
-						forumsListView.scrollTo(forumsListView.getItems().size());
+						forumsListView
+								.scrollTo(forumsListView.getItems().size());
 						setupForumEdition(forumsListView);
 						vbox.getChildren().add(forumsListView);
 					}
@@ -634,10 +669,12 @@ public class FeedController implements Controller {
 			}
 		} else {
 			tp.getSelectionModel().select(openedTabsTestsIds.get(currId));
-			VBox vb = (VBox) openedTabsTestsIds.get(selectedTestId).getContent();
+			VBox vb = (VBox) openedTabsTestsIds.get(selectedTestId)
+					.getContent();
 			if (vb.getChildren().size() > 1) {
 				@SuppressWarnings("unchecked")
-				ListView<TextFlow> forumsListView = (ListView<TextFlow>) vb.getChildren().get(1);
+				ListView<TextFlow> forumsListView = (ListView<TextFlow>) vb
+						.getChildren().get(1);
 				getLastPostsId(forumsListView);
 			}
 		}
