@@ -13,6 +13,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import javax.swing.plaf.synth.SynthSeparatorUI;
+
 import com.sun.javafx.scene.control.skin.TableHeaderRow;
 
 import javafx.application.Platform;
@@ -39,8 +41,10 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import testGen.Client;
 import testGen.model.Test;
+import testGen.model.Answer;
 import testGen.model.Controller;
 import testGen.model.NetworkConnection;
+import testGen.model.Question;
 import testGen.model.SocketEvent;
 import testGen.model.User;
 import testGen.model.User.UsersRole;

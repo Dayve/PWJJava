@@ -16,6 +16,7 @@ import testGen.model.DbConnection;
 import testGen.model.FileInfo;
 import testGen.model.Paper;
 import testGen.model.Post;
+import testGen.model.Question;
 import testGen.model.SocketEvent;
 import testGen.model.User;
 import testGen.model.User.UsersRole;
@@ -495,6 +496,26 @@ public class TestGenServer implements Runnable {
 				}
 			}
 		}
+		
+		private void handleQuestionFetching(Test givenTest) {
+			ArrayList<Question> questions = dbConn.fetchRandomQuestions(givenTest);
+
+			if (questions != null) {
+				try {
+					SocketEvent response = new SocketEvent("questionsFetched", questions);
+					objOut.writeObject(response);
+				} catch (IOException ioError) {
+					ioError.printStackTrace();
+				}
+			} else {
+				try {
+					SocketEvent response = new SocketEvent("questionsFetchingError");
+					objOut.writeObject(response);
+				} catch (IOException ioError) {
+					ioError.printStackTrace();
+				}
+			}
+		}
 
 		@Override public void run() {
 			try {
@@ -511,6 +532,11 @@ public class TestGenServer implements Runnable {
 					// name tells server what to do
 					String eventName = se.getName();
 					switch (eventName) {
+						case "generateQuestionSetForTest": {
+							Test testData = se.getObject(Test.class);
+							handleQuestionFetching(testData);
+							break;
+						}
 						case "reqAllCategories": {
 							handleSendingCategoriesList();
 							break;

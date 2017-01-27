@@ -16,11 +16,13 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import testGen.model.Answer;
 import testGen.model.Category;
 import testGen.model.Test;
 import testGen.model.Controller.RequestType;
 import testGen.model.Controller;
 import testGen.model.NetworkConnection;
+import testGen.model.Question;
 import testGen.model.SocketEvent;
 
 public class IndividualTestCreatorController implements Controller {
@@ -38,7 +40,7 @@ public class IndividualTestCreatorController implements Controller {
 	@FXML private CheckBox multipleChoiceCheckBox;
 		
 	// Date which will be used to initialize the DatePicker:
-	private String message;
+	private String message = new String("MSG");
 	private String eventName;
 
 	@FXML public void initialize() {
@@ -111,13 +113,39 @@ public class IndividualTestCreatorController implements Controller {
 			LocalDateTime startTime = LocalDateTime.now();
 			LocalDateTime endTime = LocalDateTime.now().plusHours(Long.parseLong(durationHr)).plusMinutes(Long.parseLong(durationMin));
 
-			Test conf = new Test(name, category, numberOfQuestions, numberOfAnswers, startTime, endTime, description,
+			Test newTest = new Test(name, category, numberOfQuestions, numberOfAnswers, startTime, endTime, description,
 					ApplicationController.currentUser);
+			
+			// ========================== 
+			
+			SocketEvent se = new SocketEvent("generateQuestionSetForTest", newTest);
+			NetworkConnection.sendSocketEvent(se);
+			SocketEvent res = NetworkConnection.rcvSocketEvent("questionsFetched", "questionsFetchingError");
 
-			SocketEvent se = new SocketEvent("reqAddTest", conf);
+			eventName = res.getName();
+			
+			if (eventName.equals("questionsFetched")) {
+				ArrayList<Question> receivedQuestionSet = res.getObject(ArrayList.class);
+				
+				if(receivedQuestionSet != null) {
+					for(Question q : receivedQuestionSet) {
+						System.out.println("Kategoria: " + q.getCategoryName() + "\nTreść: " + q.getContent());
+						
+						for(Answer a : q.getPossibleAnswers()) {
+							System.out.println("ODP: " + a.getAnswerContent());
+						}
+					}
+				} else {
+					System.out.println("receivedQuestionSet is null");
+				}
+			}
+			
+			// ========================== 
+
+			se = new SocketEvent("reqAddTest", newTest);
 			NetworkConnection.sendSocketEvent(se);
 
-			SocketEvent res = NetworkConnection.rcvSocketEvent("addTestSucceeded", "addTestFailed");
+			res = NetworkConnection.rcvSocketEvent("addTestSucceeded", "addTestFailed");
 			eventName = res.getName();
 
 			if (eventName.equals("addTestSucceeded")) {
@@ -136,8 +164,9 @@ public class IndividualTestCreatorController implements Controller {
 		Platform.runLater(new Runnable() {
 			@Override public void run() {
 				openDialogBox(individualTestCreatorWindow, message, true);
+				
 				if(eventName.equals("addTestSucceeded")) {
-					openNewWindow(individualTestCreatorWindow.getParent(), 
+					openNewWindow(individualTestCreatorWindow, 
 							"view/ConductTestLayout.fxml", 800, 500, true, "Test indywidualny");
 				}
 			}

@@ -6,6 +6,7 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import javax.swing.plaf.synth.SynthSeparatorUI;
 
@@ -744,8 +745,61 @@ public class DbConnection {
 		return categories;
 	}
 	
-	public ArrayList<Question> fetchQuestionsForGivenTest(Test testData) {
-		return new ArrayList<Question>();
+	public ArrayList<Question> fetchRandomQuestions(Test testData) {
+		
+		ArrayList<Question> allQuestions = new ArrayList<Question>();
+		
+		String category = testData.getCategory();
+		int nOfQuestions = testData.getnOfQuestions();
+		int nOfAnswers = testData.getnOfAnswers();
+		
+		String fetchQuestionsQuery = "select TRESC, ID_PYT from PYTANIA where ID_KAT = "
+				+ "(select ID_KAT from KATEGORIE where NAZWA_KAT = (?))";
+		
+		String fetchAnswersQuery = "select ODPOWIEDZI.TRESC, ODPOWIEDZI.ID_ODP "
+				+ "from ODPOWIEDZI join PYTANIE_ODPOWIEDZI on ODPOWIEDZI.ID_ODP = PYTANIE_ODPOWIEDZI.ID_ODP "
+				+ "where PYTANIE_ODPOWIEDZI.ID_PYT = (?)";
+				
+		try {
+			PreparedStatement pstmtForQuestions = conn.prepareStatement(fetchQuestionsQuery);
+			PreparedStatement pstmtForAnswers = conn.prepareStatement(fetchAnswersQuery);
+			
+			pstmtForQuestions.setString(1, category);
+			ResultSet answerResultSet = pstmtForQuestions.executeQuery();
+			
+			String questionContent = null;
+			Integer questionId = null;
+			
+			while (answerResultSet.next()) {
+				questionContent = answerResultSet.getString(1);
+				questionId = answerResultSet.getInt(2);
+				
+				pstmtForAnswers.setInt(1, questionId);
+				ResultSet questionResultSet = pstmtForAnswers.executeQuery();
+				ArrayList<Answer> answersList = new ArrayList<Answer>();
+				
+				String answerContent = null;
+				Integer answerId = null;
+				
+				while (questionResultSet.next()) {
+					answerContent = questionResultSet.getString(1);
+					answerId = questionResultSet.getInt(2);
+					
+					answersList.add(new Answer(answerContent, answerId));
+				}
+				
+				Collections.shuffle(answersList);
+				answersList = new ArrayList<Answer>(answersList.subList(0, nOfAnswers));
+
+				allQuestions.add(new Question(answersList, questionContent, category, questionId));
+			}
+			pstmtForQuestions.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		Collections.shuffle(allQuestions);
+		return new ArrayList<Question>(allQuestions.subList(0, nOfQuestions));
 	}
 
 	public ArrayList<Test> fetchTestFeed() {
