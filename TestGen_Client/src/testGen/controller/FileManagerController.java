@@ -201,7 +201,6 @@ public class FileManagerController implements Controller {
 			filesForThisTest = (ArrayList<FileInfo>) res.getObject(ArrayList.class);
 			refreshList(filesForThisTest);
 		}
-		
 	}
 
 	private void refreshList(ArrayList<FileInfo> newContent) {
