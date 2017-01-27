@@ -54,8 +54,7 @@ public class ApplicationController implements Controller {
 	@FXML private ComboBox<String> yearsCB;
 	@FXML private Button prevMonth;
 	@FXML private Button nextMonth;
-	@FXML private TableView<Week> calendarTable; // A TableView representing the
-	// calendar
+	@FXML private TableView<Week> calendarTable; // A TableView representing the calendar
 	@FXML Button joinLeaveManageTestBtn;
 	@FXML Button removeTestBtn;
 	@FXML Button filesMenuButton;
@@ -140,8 +139,7 @@ public class ApplicationController implements Controller {
 		});
 	}
 
-	// sets up the TabPane - makes it modify selectedTestId on tab
-	// selection change
+	// Sets up the TabPane - makes it modify selectedTestId on tab selection change
 	private void setupTabPane() {
 		eventDetailsTP.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
 			@Override public void changed(ObservableValue<? extends Tab> ov, Tab from, Tab to) {
@@ -192,8 +190,7 @@ public class ApplicationController implements Controller {
 		yearsCB.setValue("rok");
 	}
 
-	// sets the calendar up - fills it according to the current date and lets
-	// user select its cells
+	// Sets the calendar up - fills it according to the current date and lets user select its cells
 	private void setupCalendar() {
 		calendar.setCalendarsDate(LocalDate.now());
 		calendar.fillCalendarTable(calendarTable, fc.getFeed(), eventDetailsTP, listOfSelectedDaysEvents);
@@ -484,6 +481,10 @@ public class ApplicationController implements Controller {
 		if (eventName.equals("currentUserSucceeded")) {
 			currentUser = res.getObject(User.class);
 		}
+	}
+	
+	@FXML private void startIndividualTestBtn() {
+		openNewWindow(applicationWindow, "view/IndividualTestCreatorLayout.fxml", 500, 270, false, "Rozpocznij indywidualny test");
 	}
 
 	@FXML public void manageTestBtn() {

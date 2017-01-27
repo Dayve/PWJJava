@@ -458,8 +458,8 @@ public class FeedController implements Controller {
 			"\n\nOrganizatorzy:\n", 
 			"\nCzas rozpoczęcia:\n",
 			"\n\nCzas zakończenia:\n", 
-			"\n\nIlość pytań: ", 
-			"\n\nIlość możliwych odpowiedzi: ", 
+			"\n\nLiczba pytań: ", 
+			"\n\nLiczba możliwych odpowiedzi: ", 
 			"\n\nOpis:\n",
 			"\n\nUczestnicy:\n"
 		};

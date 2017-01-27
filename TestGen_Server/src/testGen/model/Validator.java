@@ -5,16 +5,17 @@ import java.time.LocalDateTime;
 public interface Validator {
 	default public int isTestValid(Test c) {
 		int retCode = 0;
+		int maxNetworkLagInMinutes = 1;
 
 		String name = c.getName(), category = c.getCategory();
 		LocalDateTime startTime = c.getStartTime(), endTime = c.getEndTime();
 
-		// the start time is less than one hour from now
-		if (startTime.isBefore(LocalDateTime.now().plusHours(1))) {
+		// The start time is less than one hour from now:
+		if (startTime.isBefore(LocalDateTime.now().minusMinutes(maxNetworkLagInMinutes))) {
 			retCode |= 1;
 		}
 
-		// starts later than finishes
+		// Starts later than finishes:
 		if (!startTime.isBefore(endTime)) {
 			retCode |= 2;
 		}

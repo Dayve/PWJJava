@@ -173,7 +173,7 @@ public class DbConnection {
 						role = UsersRole.PARTICIPANT;
 						break;
 					}
-					case "oczekujacy": { // FIXME: Should we put special characters here?
+					case "oczekujacy": {
 						role = UsersRole.PENDING;
 						break;
 					}
@@ -246,7 +246,7 @@ public class DbConnection {
 		return succeeded;
 	}
 
-	public Boolean removeUser(String login, String password) { // FIXME: CHANGE IT
+	public Boolean removeUser(String login, String password) { // FIXME: [TODO] CHANGE IT
 		/*Boolean succeeded = null;
 		Integer conferencesId = null;
 		String getTargetsConferences = "SELECT id_wydarzenia FROM uczestnik WHERE " +
@@ -294,8 +294,8 @@ public class DbConnection {
 		boolean succeeded = true;
 		String addTestProcedure = "{call add_test(?, ?, ?, ?, ?, ?, ?, ?)}";
 		
-		String insertStartTime = c.getStartTime().toString().replace('T', ' ');
-		String insertEndTime = c.getEndTime().toString().replace('T', ' ');
+		String insertStartTime = c.getStartTime().toString().replace('T', ' ').substring(0, 16);
+		String insertEndTime = c.getEndTime().toString().replace('T', ' ').substring(0, 16);
 		
 		try {
 			Statement st = conn.createStatement();
@@ -647,7 +647,7 @@ public class DbConnection {
 						participants.add(u);
 						break;
 					}
-					case "oczekujacy": { // FIXME: Should we put special characters here?
+					case "oczekujacy": {
 						pending.add(u);
 					}
 					default:
@@ -743,13 +743,16 @@ public class DbConnection {
 		
 		return categories;
 	}
+	
+	public ArrayList<Question> fetchQuestionsForGivenTest(Test testData) {
+		return new ArrayList<Question>();
+	}
 
 	public ArrayList<Test> fetchTestFeed() {
 
-		// !past - show present and future tests
-
 		Integer testId = null, numQuestions = null, numAnswers = null;
 		String name = null, description = null, category = null;
+		
 		String testFeedQuery = 
 				"select TESTY.ID_TESTU, TESTY.NAZWA_TESTU, TESTY.OPIS_TESTU, TESTY.LICZBA_PYTAN, TESTY.LICZBA_ODPOWIEDZI,"
 				+ "to_char(TESTY.CZAS_ROZPOCZECIA,'yyyy-mm-dd hh24:mi'), "

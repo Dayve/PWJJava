@@ -1,8 +1,10 @@
 package testGen.controller;
 
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Random;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -10,6 +12,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextArea;
@@ -32,6 +35,7 @@ public class TestCreatorController implements Controller {
 	@FXML private TextField numberOfAnswersBox;
 	
 	@FXML private ComboBox<String> categoriesComboBox;
+	ArrayList<Category> categories = new ArrayList<Category>();
 	
 	@FXML private DatePicker startDateField;
 	@FXML private DatePicker endDateField;
@@ -42,6 +46,8 @@ public class TestCreatorController implements Controller {
 	@FXML private ComboBox<String> endMin;
 	
 	@FXML private TextArea descriptionField;
+	
+	@FXML private CheckBox multipleChoiceCheckBox;
 		
 	// Date which will be used to initialize the DatePicker:
 	private static LocalDate testDestinedDay = LocalDate.now();
@@ -60,7 +66,30 @@ public class TestCreatorController implements Controller {
 		startDateField.setValue(testDestinedDay);
 		endDateField.setValue(testDestinedDay);
 		
-		new Thread(() -> fetchAllCategoriesList()).start();
+		//new Thread(() -> fetchAllCategoriesList()).start();
+		fetchAllCategoriesList();
+		
+		// [DEBUG ONLY]:
+		Random randomGen = new Random();
+		
+		int startHrRand = randomGen.nextInt(hours.size()-2);
+		startHr.setValue(hours.get(startHrRand));
+		endHr.setValue(hours.get(startHrRand+2));
+		
+		int endMinRand = randomGen.nextInt(minutes.size());
+		startMin.setValue(hours.get(endMinRand));
+		endMin.setValue(hours.get(endMinRand));
+		
+		startDateField.setValue(LocalDate.now().plusDays(randomGen.nextInt(20) + 1));
+		endDateField.setValue(startDateField.getValue());
+		descriptionField.setText(new BigInteger(200, randomGen).toString(32));
+		nameField.setText(new BigInteger(30, randomGen).toString(32));
+		
+		numberOfQuestionsBox.setText(String.valueOf(randomGen.nextInt(90) + 9));
+		numberOfAnswersBox.setText(String.valueOf(randomGen.nextInt(4)) + 2);
+		
+		categoriesComboBox.setValue(categories.get(randomGen.nextInt(categories.size())).getCategoryName());
+		// [DEBUG ONLY]
 	}
 	
 	// This function is called when a day is clicked (from CalendarController):
@@ -76,7 +105,7 @@ public class TestCreatorController implements Controller {
 		String eventName = res.getName();
 		
 		if (eventName.equals("categoriesFetched")) {
-			ArrayList<Category> categories = (ArrayList<Category>) res.getObject(ArrayList.class);
+			categories = (ArrayList<Category>) res.getObject(ArrayList.class);
 			ObservableList<String> categoryNames = FXCollections.observableArrayList();
 			
 			for(Category cat : categories) {
