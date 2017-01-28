@@ -16,6 +16,8 @@ import javafx.scene.layout.FlowPane;
 import javafx.util.Duration;
 import testGen.model.Answer;
 import testGen.model.Controller;
+import testGen.model.NetworkConnection;
+import testGen.model.SocketEvent;
 import testGen.model.Test;
 
 public class ConductTestController implements Controller {
@@ -31,9 +33,29 @@ public class ConductTestController implements Controller {
 
 	public static Test conductedTest;
 	private Integer currentQuestionIndex;
+	
+	private Timeline timeline;
 
+	private void requestTestWithQuestions() {
+		String eventName;
+		SocketEvent se = new SocketEvent("generateQuestionSetForTest",
+				conductedTest);
+		NetworkConnection.sendSocketEvent(se);
+		SocketEvent res = NetworkConnection.rcvSocketEvent(
+				"questionsFetched", "questionsFetchingError");
+
+		eventName = res.getName();
+
+		if (eventName.equals("questionsFetched")) {
+			conductedTest = res.getObject(Test.class);
+		}
+	}
+	
 	private void bindToTime() {
-		Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(0),
+		Long timerDuration = ChronoUnit.SECONDS.between(LocalDateTime.now(), 
+				 conductedTest.getEndTime());
+		
+		 timeline = new Timeline(new KeyFrame(Duration.seconds(timerDuration.intValue()),
 				new EventHandler<ActionEvent>() {
 					@Override public void handle(ActionEvent actionEvent) {
 						LocalDateTime currentTime = LocalDateTime.now();
@@ -81,11 +103,8 @@ public class ConductTestController implements Controller {
 		}
 	}
 
-	private void refresh() {
-
-	}
-
 	@FXML public void initialize() {
+		requestTestWithQuestions();
 		System.out.println("Dostałem test: " + conductedTest.getName());
 		if (conductedTest == null) {
 			closeWindow(conductTestWindow);
@@ -99,6 +118,9 @@ public class ConductTestController implements Controller {
 		bindToTime();
 	}
 
+	private void stopTest() {
+		timeline.stop();
+	}
 	@FXML private void sendTest() {
 
 	}
