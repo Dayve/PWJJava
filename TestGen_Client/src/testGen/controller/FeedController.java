@@ -156,7 +156,7 @@ public class FeedController implements Controller {
 
 	public Test getSelectedTest() {
 		if (selectedTestId != null) {
-			return feed.stream().filter(c -> c.getId() == selectedTestId)
+			return feed.stream().filter(test -> test.getId() == selectedTestId)
 					.findFirst().get();
 		} else {
 			return null;
@@ -164,7 +164,7 @@ public class FeedController implements Controller {
 	}
 
 	public Test getTest(int id) {
-		return feed.stream().filter(c -> c.getId() == id).findFirst().get();
+		return feed.stream().filter(test -> test.getId() == id).findFirst().get();
 	}
 
 	public void setSelectedTestId(Integer selectedTestId) {

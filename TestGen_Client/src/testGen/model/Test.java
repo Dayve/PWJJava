@@ -16,13 +16,14 @@ public class Test implements Serializable {
 	private ArrayList<User> participants = new ArrayList<User>();
 	private ArrayList<User> pending = new ArrayList<User>();
 	private ArrayList<Post> posts = new ArrayList<Post>();
+	private ArrayList<Question> questions = new ArrayList<Question>();
 
 	private String name;
 	private String category;
 	private LocalDateTime startTime;
 	private LocalDateTime endTime;
-	private int nOfQuestions;
-	private int nOfAnswers;
+	private Integer nOfQuestions;
+	private Integer nOfAnswers;
 	private String description;
 
 	public static long getSerialversionuid() {
@@ -89,19 +90,19 @@ public class Test implements Serializable {
 		this.endTime = endTime;
 	}
 
-	public int getnOfQuestions() {
+	public Integer getnOfQuestions() {
 		return nOfQuestions;
 	}
 
-	public void setnOfQuestions(int nOfQuestions) {
+	public void setnOfQuestions(Integer nOfQuestions) {
 		this.nOfQuestions = nOfQuestions;
 	}
 
-	public int getnOfAnswers() {
+	public Integer getnOfAnswers() {
 		return nOfAnswers;
 	}
 
-	public void setnOfAnswers(int nOfAnswers) {
+	public void setnOfAnswers(Integer nOfAnswers) {
 		this.nOfAnswers = nOfAnswers;
 	}
 
@@ -113,6 +114,10 @@ public class Test implements Serializable {
 		this.description = description;
 	}
 	
+	public ArrayList<Question> getQuestions() {
+		return questions;
+	}
+
 	public Test(int id, String name, String cat, int nOfQ, int nOfAns, LocalDateTime startTime, LocalDateTime endTime,
 			String description, User organizer) {
 		this(name, cat, nOfQ, nOfAns, startTime, endTime, description, organizer);

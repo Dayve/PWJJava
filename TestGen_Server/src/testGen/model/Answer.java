@@ -8,12 +8,12 @@ public class Answer implements Serializable {
 	
 	private String content;
 	private Boolean isSelected;
-	private int ID;
+	private Integer id;
 
-	public Answer(String answerContent, int iD) {
+	public Answer(Integer id, String answerContent) {
 		this.content = answerContent;
 		this.isSelected = false;
-		ID = iD;
+		this.id = id;
 	}
 	
 	public Answer(String answerContent) {
@@ -38,12 +38,12 @@ public class Answer implements Serializable {
 		this.isSelected = isRight;
 	}
 	
-	public int getID() {
-		return ID;
+	public Integer getId() {
+		return id;
 	}
 
-	public void setID(int iD) {
-		ID = iD;
+	public void setID(Integer id) {
+		this.id = id;
 	}
 }
 

@@ -4,6 +4,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.FlowPane?>
@@ -67,11 +68,14 @@
             </Button>
          </children>
       </GridPane>
-      <FlowPane fx:id="answersFlowPane" GridPane.rowIndex="2" GridPane.rowSpan="2">
+      <ScrollPane hbarPolicy="NEVER" GridPane.rowIndex="2" GridPane.rowSpan="2">
          <GridPane.margin>
             <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
          </GridPane.margin>
-      </FlowPane>
+         <content>
+            <FlowPane fx:id="answersFlowPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
+         </content>
+      </ScrollPane>
       <ListView fx:id="questionsListView" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.rowSpan="2">
          <GridPane.margin>
             <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
@@ -134,5 +138,14 @@
             </Label>
          </children>
       </GridPane>
+      <ScrollPane hbarPolicy="NEVER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
+         <content>
+            <Label fx:id="questionContentLabel" wrapText="true">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </Label>
+         </content>
+      </ScrollPane>
    </children>
 </GridPane>
