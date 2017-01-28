@@ -38,8 +38,8 @@ public class IndividualTestCreatorController implements Controller {
 
 	@FXML private CheckBox multipleChoiceCheckBox;
 
-	private LocalDateTime testsEndTime;
-	
+	private Test receivedTestWithQuestions;
+
 	// Date which will be used to initialize the DatePicker:
 	private String message = new String("MSG");
 	private String eventName;
@@ -88,105 +88,82 @@ public class IndividualTestCreatorController implements Controller {
 	}
 
 	@FXML public void reqAddTest() {
-		String name = new String("Test indywidualny użytkownika "
-				+ ApplicationController.currentUser.getLogin());
-		Integer numberOfQuestions = null, numberOfAnswers = null;
-
+		String name = new String("Test indywidualny użytkownika " + ApplicationController.currentUser.getLogin());
+		Integer numberOfQuestions = null, numberOfAnswers= null;
+		
 		try {
-			numberOfQuestions = Integer
-					.parseInt(numberOfQuestionsBox.getText());
+			numberOfQuestions = Integer.parseInt(numberOfQuestionsBox.getText());
 			numberOfAnswers = Integer.parseInt(numberOfAnswersBox.getText());
 		} catch (NumberFormatException formatExc) {
 			Platform.runLater(new Runnable() {
 				@Override public void run() {
-					openDialogBox(individualTestCreatorWindow,
-							"Proszę uzupełnić wszystkie pola", true);
+					openDialogBox(individualTestCreatorWindow, "Proszę uzupełnić wszystkie pola", true);
 				}
 			});
 			return;
 		}
 
 		String category = categoriesComboBox.getValue();
-		String description = new String("Test indywidualny.\n" + "Autor: "
-				+ ApplicationController.currentUser.getLogin() + "\n"
-				+ "Czas utworzenia rządania: "
-				+ LocalDateTime.now().toString().replace('T', ' '));
+		String description = new String("Test indywidualny.\n" 
+				+ "Autor: " + ApplicationController.currentUser.getLogin() + "\n"
+				+ "Czas utworzenia rządania: " + LocalDateTime.now().toString().replace('T', ' ')
+		);
 
 		// get LocalDateTime from LocalDate
 		String durationHr = durationHrCB.getSelectionModel().getSelectedItem();
-		String durationMin = durationMinCB.getSelectionModel()
-				.getSelectedItem();
+		String durationMin = durationMinCB.getSelectionModel().getSelectedItem();
 
 		// check if all hour and min combo boxes are filled
 		if (category != null && durationHr != null && durationMin != null
 				&& numberOfQuestions != null && numberOfAnswers != null) {
 
 			LocalDateTime startTime = LocalDateTime.now();
-			LocalDateTime endTime = LocalDateTime.now()
-					.plusHours(Long.parseLong(durationHr))
-					.plusMinutes(Long.parseLong(durationMin));
-			testsEndTime = endTime;
+			LocalDateTime endTime = LocalDateTime.now().plusHours(Long.parseLong(durationHr)).plusMinutes(Long.parseLong(durationMin));
 
-			Test newTest = new Test(name, category, numberOfQuestions,
-					numberOfAnswers, startTime, endTime, description,
+			Test newTest = new Test(name, category, numberOfQuestions, numberOfAnswers, startTime, endTime, description,
 					ApplicationController.currentUser);
-
-			// ==========================
-
-			SocketEvent se = new SocketEvent("generateQuestionSetForTest",
-					newTest);
+			
+			// ========================== 
+			
+			SocketEvent se = new SocketEvent("generateQuestionSetForTest", newTest);
 			NetworkConnection.sendSocketEvent(se);
-			SocketEvent res = NetworkConnection.rcvSocketEvent(
-					"questionsFetched", "questionsFetchingError");
+			SocketEvent res = NetworkConnection.rcvSocketEvent("questionsFetched", "questionsFetchingError");
 
 			eventName = res.getName();
-
+			
 			if (eventName.equals("questionsFetched")) {
-				ArrayList<Question> receivedQuestionSet = res
-						.getObject(ArrayList.class);
-
-				if (receivedQuestionSet != null) {
-					for (Question q : receivedQuestionSet) {
-						System.out.println("Kategoria: " + q.getCategoryName()
-								+ "\nTreść: " + q.getContent());
-
-						for (Answer a : q.getPossibleAnswers()) {
-							System.out.println("ODP: " + a.getAnswerContent());
-						}
-					}
-				} else {
-					System.out.println("receivedQuestionSet is null");
-				}
+				receivedTestWithQuestions = res.getObject(Test.class);
 			}
-
-			// ==========================
+			
+			// ========================== 
 
 			se = new SocketEvent("reqAddTest", newTest);
 			NetworkConnection.sendSocketEvent(se);
 
-			res = NetworkConnection.rcvSocketEvent("addTestSucceeded",
-					"addTestFailed");
+			res = NetworkConnection.rcvSocketEvent("addTestSucceeded", "addTestFailed");
 			eventName = res.getName();
 
 			if (eventName.equals("addTestSucceeded")) {
-				message = "Dodano nowy test indywidualny do bazy danych. Po zamknięciu "
-						+ "tego powiadomienia nastąpi przejście do testu.";
+				message = "Dodano nowy test do bazy danych.";
 				ApplicationController.makeRequest(RequestType.UPDATE_TEST_FEED);
-			} else if (eventName.equals("addTestFailed")) {
+			}
+			else if (eventName.equals("addTestFailed")) {
 				message = res.getObject(String.class);
-			} else {
+			}
+			else {
 				message = "Nie udało się dodać testu. Serwer nie odpowiada.";
 			}
 		} else {
-			message = "Proszę wypełnić wszystkie pola z godziną i minutą oraz upewnić "
-					+ "się, że wybrano kategorię.";
+			message = "Proszę wypełnić wszystkie pola z godziną i minutą oraz upewnić się, że wybrano kategorię.";
 		}
 		Platform.runLater(new Runnable() {
 			@Override public void run() {
 				openDialogBox(individualTestCreatorWindow, message, true);
-				if (eventName.equals("addTestSucceeded")) {
-					ConductTestController.testEndTime = testsEndTime;
-					caller.startIndividualTest();
+				
+				if(eventName.equals("addTestSucceeded")) {
+					ConductTestController.conductedTest = receivedTestWithQuestions;
+					openNewWindow(individualTestCreatorWindow, 
+							"view/ConductTestLayout.fxml", 800, 500, true, "Test indywidualny");
 				}
 			}
 		});

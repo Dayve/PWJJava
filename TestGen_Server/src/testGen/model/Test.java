@@ -13,21 +13,21 @@ public class Test implements Serializable {
 	private ArrayList<User> organizers = new ArrayList<User>();
 	private ArrayList<User> participants = new ArrayList<User>();
 	private ArrayList<User> pending = new ArrayList<User>();
+	private ArrayList<Question> questions = new ArrayList<Question>();
 
 	private String name;
 	private String category;
 	private LocalDateTime startTime;
 	private LocalDateTime endTime;
-	private int nOfQuestions;
-	private int nOfAnswers;
+	private Integer nOfQuestions;
+	private Integer nOfAnswers;
 	private String description;
 
-	
 	public int getnOfQuestions() {
 		return nOfQuestions;
 	}
 
-	public void setnOfQuestions(int nOfQuestions) {
+	public void setnOfQuestions(Integer nOfQuestions) {
 		this.nOfQuestions = nOfQuestions;
 	}
 
@@ -35,7 +35,7 @@ public class Test implements Serializable {
 		return nOfAnswers;
 	}
 
-	public void setnOfAnswers(int nOfAnswers) {
+	public void setnOfAnswers(Integer nOfAnswers) {
 		this.nOfAnswers = nOfAnswers;
 	}
 
@@ -82,13 +82,21 @@ public class Test implements Serializable {
 		return ret;
 	}
 
-	public Test(int id, String name, String category, int numQ, int numAns, LocalDateTime startTime, LocalDateTime endTime,
+	public ArrayList<Question> getQuestions() {
+		return questions;
+	}
+
+	public void setQuestions(ArrayList<Question> questions) {
+		this.questions = questions;
+	}
+
+	public Test(int id, String name, String category, Integer numQ, Integer numAns, LocalDateTime startTime, LocalDateTime endTime,
 			String description, ArrayList<User> organizers) {
 		this(name, category, numQ, numAns, startTime, endTime, description, organizers);
 		this.id = id;
 	}
 
-	public Test(String name, String category, int numQ, int numAns, LocalDateTime startTime, LocalDateTime endTime,
+	public Test(String name, String category, Integer numQ, Integer numAns, LocalDateTime startTime, LocalDateTime endTime,
 			String description, ArrayList<User> organizers) {
 		this.name = name;
 		this.category = category;
@@ -100,8 +108,10 @@ public class Test implements Serializable {
 		this.organizers = organizers;
 	}
 
-	public Test(String name, String category, int numQ, int numAns, LocalDateTime startTime, LocalDateTime endTime,
-			String description, ArrayList<User> organizers, ArrayList<User> participants, ArrayList<User> pending) {
+	public Test(String name, String category, Integer numQ, Integer numAns,
+			LocalDateTime startTime, LocalDateTime endTime, String description,
+			ArrayList<Question> questions, ArrayList<User> organizers,
+			ArrayList<User> participants, ArrayList<User> pending) {
 		this.name = name;
 		this.category = category;
 		this.nOfQuestions = numQ;
@@ -109,18 +119,21 @@ public class Test implements Serializable {
 		this.startTime = startTime;
 		this.endTime = endTime;
 		this.description = description;
+		this.questions = questions;
 		this.organizers = organizers;
 		this.participants = participants;
 		this.pending = pending;
 	}
 
-	public Test(int id, String name, String category, int numQ, int numAns, LocalDateTime startTime, LocalDateTime endTime,
-			String description, ArrayList<User> organizers, ArrayList<User> participants, ArrayList<User> pending) {
-		this(name, category, numQ, numAns, startTime, endTime, description, organizers,
-				participants, pending);
+	public Test(int id, String name, String category, Integer numQ, Integer numAns,
+			LocalDateTime startTime, LocalDateTime endTime, String description,
+			ArrayList<Question> questions, ArrayList<User> organizers,
+			ArrayList<User> participants, ArrayList<User> pending) {
+		this(name, category, numQ, numAns, startTime, endTime, description,
+				questions, organizers, participants, pending);
 		this.id = id;
 	}
-	
+
 	@Override public String toString() {
 		String organizersStr = "";
 		Iterator<User> it = organizers.iterator();
@@ -132,9 +145,11 @@ public class Test implements Serializable {
 			}
 		}
 
-		String ret = "Kategoria: " + category + "\nIlość pytań: " + nOfQuestions + "\nIlość możliwych odpowiedzi: " + nOfAnswers
+		String ret = "Kategoria: " + category + "\nIlość pytań: " + nOfQuestions
+				+ "\nIlość możliwych odpowiedzi: " + nOfAnswers
 				+ "\nOrganizatorzy: " + organizersStr + "\nCzas rozpoczęcia: "
-				+ startTime.toString().replace("T", ", godz. ") + "\nCzas zakończenia: "
+				+ startTime.toString().replace("T", ", godz. ")
+				+ "\nCzas zakończenia: "
 				+ endTime.toString().replace("T", ", godz. ");
 		if (this.description != null) {
 			ret += "\nOpis: " + description;

@@ -8,6 +8,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 import testGen.model.Test;
@@ -27,7 +28,10 @@ public class TestGenServer implements Runnable {
 	private ServerSocket listener;
 	public HashMap<Integer, User> loggedUsers = new HashMap<Integer, User>();
 	private int port;
+	
+	private HashMap<Integer, ArrayList<Question>> questionSetsForTests = new HashMap<Integer, ArrayList<Question>>();
 
+	
 	public TestGenServer(int p) {
 		port = p;
 	}
@@ -277,8 +281,8 @@ public class TestGenServer implements Runnable {
 			}
 		}
 
-		private void handleTestFeed(Integer callerId) {
-			ArrayList<Test> testFeed = dbConn.fetchTestFeed(callerId);
+		private void handleTestFeed() {
+			ArrayList<Test> testFeed = dbConn.fetchTestFeed();
 			SocketEvent se = null;
 
 			// create SocketEvent w ArrayList arg
@@ -498,11 +502,24 @@ public class TestGenServer implements Runnable {
 		}
 		
 		private void handleQuestionFetching(Test givenTest) {
-			ArrayList<Question> questions = dbConn.fetchRandomQuestions(givenTest);
+			int testID = givenTest.getId();
+			ArrayList<Question> questions = null;
+			
+			if(questionSetsForTests.containsKey(testID)) {
+				questions = questionSetsForTests.get(testID);
+			}
+			else {
+				questions = dbConn.fetchRandomQuestions(givenTest);
+				questionSetsForTests.put(testID, questions);
+			}
+			
+			// givenTest is not expected to have any questions:
+			Collections.shuffle(questions);
+			givenTest.setQuestions(questions);
 
 			if (questions != null) {
 				try {
-					SocketEvent response = new SocketEvent("questionsFetched", questions);
+					SocketEvent response = new SocketEvent("questionsFetched", givenTest);
 					objOut.writeObject(response);
 				} catch (IOException ioError) {
 					ioError.printStackTrace();
@@ -516,6 +533,7 @@ public class TestGenServer implements Runnable {
 				}
 			}
 		}
+		
 
 		@Override public void run() {
 			try {
@@ -573,6 +591,11 @@ public class TestGenServer implements Runnable {
 							handlePostRemoving(givenPostID);
 							break;
 						}
+//						case "reqQestions": {
+//							Test dataWithoutQuestions = se.getObject(Test.class);
+//							handleQuestionFetching(dataWithoutQuestions);
+//							break;
+//						}
 						// login request
 						case "reqLogin": {
 							User u = (User) se.getObject(User.class);
@@ -592,8 +615,7 @@ public class TestGenServer implements Runnable {
 							break;
 						}
 						case "reqTestFeed": {
-							Integer callerId = se.getObject(Integer.class);
-							handleTestFeed(callerId);
+							handleTestFeed();
 							break;
 						}
 						case "reqAddTest": {
