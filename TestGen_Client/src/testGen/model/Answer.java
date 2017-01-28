@@ -30,11 +30,11 @@ public class Answer implements Serializable {
 		this.content = answerContent;
 	}
 	
-	public Boolean getIsRight() {
+	public Boolean getIsSelected() {
 		return isSelected;
 	}
 	
-	public void setIsRight(Boolean isRight) {
+	public void setIsSelected(Boolean isRight) {
 		this.isSelected = isRight;
 	}
 	

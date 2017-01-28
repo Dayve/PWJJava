@@ -108,8 +108,8 @@ public interface Controller {
 		Scene newScene = null;
 		try {
 			newScene = new Scene(loader.load());
-			newStage.setMaxHeight(minH + 25);
-			newStage.setMaxWidth(minW);
+			newStage.setMinHeight(minH + 25);
+			newStage.setMinWidth(minW);
 			newStage.initOwner(sourceStage);
 			if (modality) {
 				newStage.initModality(Modality.WINDOW_MODAL);
@@ -145,8 +145,6 @@ public interface Controller {
 		try {
 			newScene = new Scene(loader.load());
 			newScene.getStylesheets().add(Client.class.getResource("application.css").toExternalForm());
-			newStage.setMaxHeight(250);
-			newStage.setMaxWidth(300);
 			newStage.initModality(Modality.WINDOW_MODAL);
 			newStage.initOwner(sourceStage);
 			newStage.setScene(newScene);
@@ -176,8 +174,6 @@ public interface Controller {
 		try {
 			newScene = new Scene(loader.load());
 			newScene.getStylesheets().add(Client.class.getResource("application.css").toExternalForm());
-			newStage.setMaxHeight(305);
-			newStage.setMaxWidth(400);
 			if (modality) {
 				newStage.initModality(Modality.WINDOW_MODAL);
 			}

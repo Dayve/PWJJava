@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 
 import javax.swing.plaf.synth.SynthSeparatorUI;
 
@@ -853,4 +854,77 @@ public class DbConnection {
 		}
 		return testFeed;
 	}
+	
+	
+	public Result checkTestResults(Test givenTest) {
+		String questionAndAnswersQuery = "select PYTANIA.ID_PYT, ODPOWIEDZI.ID_ODP "
+				+ "from PYTANIA join PYTANIE_ODPOWIEDZI on PYTANIA.ID_PYT = PYTANIE_ODPOWIEDZI.ID_PYT "
+				+ "join ODPOWIEDZI on PYTANIE_ODPOWIEDZI.ID_ODP = ODPOWIEDZI.ID_ODP "
+				+ "where ODPOWIEDZI.POPRAWNOSC = 1";
+		
+		Result obtainedResult = new Result(givenTest.getName(), givenTest.getId(), givenTest.getnOfQuestions());
+		HashMap<Integer, ArrayList<Integer>> qID_RightAnswersIDs = new HashMap<Integer, ArrayList<Integer>>();
+		
+		try {
+			PreparedStatement pstmt;
+			
+			Integer qID = null, ansID = null;
+
+			pstmt = conn.prepareStatement(questionAndAnswersQuery);
+			ResultSet rs = pstmt.executeQuery();
+			
+			while (rs.next()) {
+				qID = rs.getInt(1);
+				ansID = rs.getInt(2);
+				
+				if(!qID_RightAnswersIDs.containsKey(qID)) {
+					ArrayList<Integer> initialList = new ArrayList<Integer>();
+					initialList.add(ansID);
+					
+					qID_RightAnswersIDs.put(qID, initialList);
+				}
+				else {
+					qID_RightAnswersIDs.get(qID).add(ansID);
+				}
+			}
+			pstmt.close();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+		
+		for(Question question : givenTest.getQuestions()) {
+			ArrayList<Integer> yourAnswersIDs = new ArrayList<Integer>();
+			String yourAnswersInfo = "", rightAnswersInfo = "";
+			
+			for(Answer answer : question.getPossibleAnswers()) {
+				if(answer.getIsSelected()) {
+					yourAnswersIDs.add(answer.getId());
+					yourAnswersInfo += answer.getAnswerContent() + "\n";
+				}
+				
+				for(Integer rightAnswerID : qID_RightAnswersIDs.get(question.getID())) {
+					if(answer.getId() == rightAnswerID) {
+						rightAnswersInfo += answer.getAnswerContent() + "\n";
+						break;
+					}
+				}
+			}
+			
+			// You have exactly the same answer(s) as you were supposed to have:
+			if(yourAnswersIDs.size() == qID_RightAnswersIDs.get(question.getID()).size()
+				&& yourAnswersIDs.containsAll(qID_RightAnswersIDs.get(question.getID())))
+			{
+				obtainedResult.addOnePoint();
+				
+				obtainedResult.addPartialResultDescription(
+					new VerifiedQuestionDescription(question.getContent(), yourAnswersInfo, rightAnswersInfo, true)
+				);
+			}
+		}
+		
+		return obtainedResult;
+	}
+	
 }

@@ -18,6 +18,7 @@ import testGen.model.FileInfo;
 import testGen.model.Paper;
 import testGen.model.Post;
 import testGen.model.Question;
+import testGen.model.Result;
 import testGen.model.SocketEvent;
 import testGen.model.User;
 import testGen.model.User.UsersRole;
@@ -534,6 +535,26 @@ public class TestGenServer implements Runnable {
 			}
 		}
 		
+		private void handleTestChecking(Test givenTest) {
+			Result testResult = dbConn.checkTestResults(givenTest);
+			
+			if (testResult != null) {
+				try {
+					SocketEvent response = new SocketEvent("testVerified", testResult);
+					objOut.writeObject(response);
+				} catch (IOException ioError) {
+					ioError.printStackTrace();
+				}
+			} else {
+				try {
+					SocketEvent response = new SocketEvent("testVerifyingError");
+					objOut.writeObject(response);
+				} catch (IOException ioError) {
+					ioError.printStackTrace();
+				}
+			}
+		}
+		
 
 		@Override public void run() {
 			try {
@@ -550,6 +571,11 @@ public class TestGenServer implements Runnable {
 					// name tells server what to do
 					String eventName = se.getName();
 					switch (eventName) {
+						case "checkThisTest": {
+							Test toBeChecked = se.getObject(Test.class);
+							handleTestChecking(toBeChecked);
+							break;
+						}
 						case "generateQuestionSetForTest": {
 							Test testData = se.getObject(Test.class);
 							handleQuestionFetching(testData);
