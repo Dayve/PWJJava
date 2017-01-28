@@ -30,7 +30,7 @@ public class ConductTestController implements Controller {
 	@FXML private FlowPane answersFlowPane;
 
 	public static Test conductedTest;
-	private Integer currentQuestionNumber;
+	private Integer currentQuestionIndex;
 
 	private void bindToTime() {
 		Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(0),
@@ -44,9 +44,18 @@ public class ConductTestController implements Controller {
 						Long minutesToDisplay = (diffInSeconds / 60) % 60;
 						Long hoursToDisplay = (diffInSeconds / 3600) % 24;
 
-						timeLeftLabel.setText((hoursToDisplay.toString() + ":"
-								+ minutesToDisplay.toString() + ":"
-								+ secondsToDisplay.toString()));
+						String secondsToDisplayStr = secondsToDisplay < 10 ?
+							"0" + secondsToDisplay.toString() : secondsToDisplay.toString();
+						
+						String minutesToDisplayStr = minutesToDisplay < 10 ?
+								"0" + minutesToDisplay.toString() : minutesToDisplay.toString();
+								
+						String hoursToDisplayStr = hoursToDisplay < 10
+								? "0" + hoursToDisplay.toString() : hoursToDisplay.toString();
+									
+						timeLeftLabel.setText((hoursToDisplayStr + ":"
+								+ minutesToDisplayStr + ":"
+								+ secondsToDisplayStr));
 					}
 				}), new KeyFrame(Duration.seconds(1)));
 		timeline.setCycleCount(Animation.INDEFINITE);
@@ -55,17 +64,18 @@ public class ConductTestController implements Controller {
 
 	private void updateQuestionAndAnswersContainers() {
 		questionContentLabel.setText(conductedTest.getQuestions()
-				.get(currentQuestionNumber).getContent());
-		numberOfCurrentQuestionLabel.setText(currentQuestionNumber.toString());
+				.get(currentQuestionIndex).getContent());
+		Integer questionDisplayNumber = currentQuestionIndex + 1;
+		numberOfCurrentQuestionLabel.setText(questionDisplayNumber.toString());
 		
 		answersFlowPane.getChildren().clear();
 		for (Answer answer : conductedTest.getQuestions()
-				.get(currentQuestionNumber).getPossibleAnswers()) {
+				.get(currentQuestionIndex).getPossibleAnswers()) {
 			
 			Label answerLabel = new Label(answer.getAnswerContent());
 			answerLabel.setId(answer.getId().toString());
-			answerLabel.setPrefWidth(answersFlowPane.getWidth());
-			answerLabel.setStyle("-fx-font: 14px Inconsolata;");
+			answerLabel.setPrefWidth(2017);
+			answerLabel.setStyle("-fx-font: 18px Inconsolata; -fx-padding: 5 5 5 5;");
 			
 			answersFlowPane.getChildren().add(answerLabel);
 		}
@@ -76,10 +86,12 @@ public class ConductTestController implements Controller {
 	}
 
 	@FXML public void initialize() {
+		System.out.println("Dostałem test: " + conductedTest.getName());
 		if (conductedTest == null) {
 			closeWindow(conductTestWindow);
 		}
-		currentQuestionNumber = 0;
+		currentQuestionIndex = 0;
+		
 		totalNumberOfQuestionsLabel
 		.setText(conductedTest.getnOfQuestions().toString());
 		updateQuestionAndAnswersContainers();
@@ -92,19 +104,19 @@ public class ConductTestController implements Controller {
 	}
 
 	@FXML private void previousQuestion() {
-		if (currentQuestionNumber > 0) {
-			currentQuestionNumber--;
+		if (currentQuestionIndex > 0) {
+			currentQuestionIndex--;
 		} else {
-			currentQuestionNumber = conductedTest.getnOfQuestions() - 1;
+			currentQuestionIndex = conductedTest.getQuestions().size() - 1;
 		}
 		updateQuestionAndAnswersContainers();
 	}
 
 	@FXML private void nextQuestion() {
-		if (currentQuestionNumber < conductedTest.getnOfQuestions() - 1) {
-			currentQuestionNumber++;
+		if (currentQuestionIndex < conductedTest.getQuestions().size() - 1) {
+			currentQuestionIndex++;
 		} else {
-			currentQuestionNumber = 0;
+			currentQuestionIndex = 0;
 		}
 		updateQuestionAndAnswersContainers();
 	}
