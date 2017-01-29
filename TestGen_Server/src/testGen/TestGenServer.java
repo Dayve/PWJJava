@@ -67,6 +67,8 @@ public class TestGenServer implements Runnable {
 		private ObjectOutputStream objOut;
 		private DbConnection dbConn;
 		private User loggedUser = null;
+		
+		private Test currentTest = null;
 
 		public ServerImplementation(Socket socket) {
 			// connect to database
@@ -504,6 +506,16 @@ public class TestGenServer implements Runnable {
 		
 		private void handleQuestionFetching(Test givenTest) {
 			int testID = givenTest.getId();
+			if (!givenTest.getQuestions().isEmpty() && currentTest != null){
+				try {
+					SocketEvent response = new SocketEvent("questionsFetched", currentTest);
+					objOut.writeObject(response);
+				} catch (IOException ioError) {
+					ioError.printStackTrace();
+				}
+				return;
+			}
+			
 			ArrayList<Question> questions = null;
 			
 			if(questionSetsForTests.containsKey(testID)) {
@@ -518,6 +530,7 @@ public class TestGenServer implements Runnable {
 			Collections.shuffle(questions);
 			givenTest.setQuestions(questions);
 
+			
 			if (questions != null) {
 				try {
 					SocketEvent response = new SocketEvent("questionsFetched", givenTest);
@@ -571,6 +584,14 @@ public class TestGenServer implements Runnable {
 					// name tells server what to do
 					String eventName = se.getName();
 					switch (eventName) {
+						
+						case "updateTestsAnswers": {
+							Test updatedTest = se.getObject(Test.class);
+							if(updatedTest != null) {
+								currentTest = updatedTest;
+							}
+						}
+						
 						case "checkThisTest": {
 							Test toBeChecked = se.getObject(Test.class);
 							handleTestChecking(toBeChecked);
