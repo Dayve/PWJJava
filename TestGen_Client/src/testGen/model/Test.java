@@ -25,6 +25,7 @@ public class Test implements Serializable {
 	private Integer nOfQuestions;
 	private Integer nOfAnswers;
 	private String description;
+	private Boolean isSingleChoice;
 
 	public static long getSerialversionuid() {
 		return serialVersionUID;
@@ -117,15 +118,24 @@ public class Test implements Serializable {
 	public ArrayList<Question> getQuestions() {
 		return questions;
 	}
+	
+	public Boolean getIsSingleChoice() {
+		return isSingleChoice;
+	}
 
-	public Test(int id, String name, String cat, int nOfQ, int nOfAns, LocalDateTime startTime, LocalDateTime endTime,
+	public void setIsSingleChoice(Boolean isSingleChoice) {
+		this.isSingleChoice = isSingleChoice;
+	}
+
+	public Test(int id, boolean singleChoice, String name, String cat, int nOfQ, int nOfAns, LocalDateTime startTime, LocalDateTime endTime,
 			String description, User organizer) {
-		this(name, cat, nOfQ, nOfAns, startTime, endTime, description, organizer);
+		this(singleChoice, name, cat, nOfQ, nOfAns, startTime, endTime, description, organizer);
 		this.id = id;
 	}
 
-	public Test(String name, String cat, int nOfQ, int nOfAns, LocalDateTime startTime, LocalDateTime endTime,
+	public Test(boolean singleChoice, String name, String cat, int nOfQ, int nOfAns, LocalDateTime startTime, LocalDateTime endTime,
 			String description, User organizer) {
+		this.isSingleChoice = singleChoice;
 		this.name = name;
 		this.category = cat;
 		this.nOfQuestions = nOfQ;
@@ -136,8 +146,9 @@ public class Test implements Serializable {
 		organizers.add(organizer);
 	}
 
-	public Test(String name, String cat, int nOfQ, int nOfAns, LocalDateTime startTime, LocalDateTime endTime,
+	public Test(boolean singleChoice, String name, String cat, int nOfQ, int nOfAns, LocalDateTime startTime, LocalDateTime endTime,
 			String description, ArrayList<User> organizers) {
+		this.isSingleChoice = singleChoice;
 		this.name = name;
 		this.category = cat;
 		this.nOfQuestions = nOfQ;
@@ -148,9 +159,9 @@ public class Test implements Serializable {
 		this.organizers = organizers;
 	}
 
-	public Test(int id, String name, String cat, int nOfQ, int nOfAns, LocalDateTime startTime, LocalDateTime endTime,
+	public Test(int id, boolean singleChoice, String name, String cat, int nOfQ, int nOfAns, LocalDateTime startTime, LocalDateTime endTime,
 			String description, ArrayList<User> organizers) {
-		this(name, cat, nOfQ, nOfAns, startTime, endTime, description, organizers);
+		this(singleChoice, name, cat, nOfQ, nOfAns, startTime, endTime, description, organizers);
 		this.id = id;
 	}
 

@@ -141,7 +141,7 @@ public class TestCreatorController implements Controller {
 			LocalDateTime startTime = startDate.plusHours(Long.parseLong(startHrCB)).plusMinutes(Long.parseLong(startMinCB));
 			LocalDateTime endTime = endDate.plusHours(Long.parseLong(endHrCB)).plusMinutes(Long.parseLong(endMinCB));
 
-			Test conf = new Test(name, category, numberOfQuestions, numberOfAnswers, startTime, endTime, description,
+			Test conf = new Test(!multipleChoiceCheckBox.isSelected(), name, category, numberOfQuestions, numberOfAnswers, startTime, endTime, description,
 					ApplicationController.currentUser);
 
 			SocketEvent se = new SocketEvent("reqAddTest", conf);

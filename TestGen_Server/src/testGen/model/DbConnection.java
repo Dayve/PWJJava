@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Random;
 
 import javax.swing.plaf.synth.SynthSeparatorUI;
 
@@ -294,7 +295,7 @@ public class DbConnection {
 
 	public boolean addTest(Test c) {
 		boolean succeeded = true;
-		String addTestProcedure = "{call add_test(?, ?, ?, ?, ?, ?, ?, ?)}";
+		String addTestProcedure = "{call add_test(?, ?, ?, ?, ?, ?, ?, ?, ?)}";
 		
 		String insertStartTime = c.getStartTime().toString().replace('T', ' ').substring(0, 16);
 		String insertEndTime = c.getEndTime().toString().replace('T', ' ').substring(0, 16);
@@ -310,12 +311,11 @@ public class DbConnection {
 			pstmt.setInt(4, c.getnOfQuestions());
 			pstmt.setInt(5, c.getnOfAnswers());
 			pstmt.setString(6, c.getCategory());
+
+			pstmt.setInt(7, c.getIsSingleChoice() ? 1 : 0);
 			
-			System.out.println(insertStartTime);
-			System.out.println(insertEndTime);
-			
-			pstmt.setString(7, insertStartTime);
-			pstmt.setString(8, insertEndTime);
+			pstmt.setString(8, insertStartTime);
+			pstmt.setString(9, insertEndTime);
 			pstmt.executeUpdate();
 			pstmt.close();
 
@@ -670,9 +670,11 @@ public class DbConnection {
 	public Test fetchTest(Integer targetTestId) {
 		Integer fetchedTestId = null, numQuestions = null, numAnswers = null;
 		String name = null, description = null, category = null;
+		Boolean singleChoice = null;
 
 		String fetchTestQuery = 
-				"select TESTY.ID_TESTU, TESTY.NAZWA_TESTU, TESTY.OPIS_TESTU, TESTY.LICZBA_PYTAN, TESTY.LICZBA_ODPOWIEDZI,"
+				"select TESTY.ID_TESTU, TESTY.NAZWA_TESTU, TESTY.OPIS_TESTU, TESTY.LICZBA_PYTAN, "
+				+ "TESTY.LICZBA_ODPOWIEDZI, TESTY.JEDNOKROTNY_WYBOR, "
 				+ "to_char(TESTY.CZAS_ROZPOCZECIA,'yyyy-mm-dd hh24:mi'), "
 				+ "to_char(TESTY.CZAS_ZAKONCZENIA,'yyyy-mm-dd hh24:mi'), "
 				+ "KATEGORIE.NAZWA_KAT "
@@ -695,9 +697,10 @@ public class DbConnection {
 				description = rs.getString(3);
 				numQuestions = rs.getInt(4);
 				numAnswers = rs.getInt(5);
-				startTimeStr = rs.getString(6);
-				endTimeStr = rs.getString(7);
-				category = rs.getString(8);
+				singleChoice = (rs.getInt(6) == 1);
+				startTimeStr = rs.getString(7);
+				endTimeStr = rs.getString(8);
+				category = rs.getString(9);
 			}
 			pstmt.close();
 
@@ -712,7 +715,7 @@ public class DbConnection {
 			startTime = LocalDateTime.parse(startTimeStr, formatter);
 			endTime = LocalDateTime.parse(endTimeStr, formatter);
 
-			ret = new Test(fetchedTestId, name, category, numQuestions, numAnswers, startTime, endTime, description,
+			ret = new Test(fetchedTestId, singleChoice, name, category, numQuestions, numAnswers, startTime, endTime, description,
 					new ArrayList<Question>(), allParticipants.get(0), allParticipants.get(1), allParticipants.get(2));
 
 		} catch (SQLException e) {
@@ -757,7 +760,7 @@ public class DbConnection {
 		String fetchQuestionsQuery = "select TRESC, ID_PYT from PYTANIA where ID_KAT = "
 				+ "(select ID_KAT from KATEGORIE where NAZWA_KAT = (?))";
 		
-		String fetchAnswersQuery = "select ODPOWIEDZI.TRESC, ODPOWIEDZI.ID_ODP "
+		String fetchAnswersQuery = "select ODPOWIEDZI.TRESC, ODPOWIEDZI.ID_ODP, ODPOWIEDZI.POPRAWNOSC "
 				+ "from ODPOWIEDZI join PYTANIE_ODPOWIEDZI on ODPOWIEDZI.ID_ODP = PYTANIE_ODPOWIEDZI.ID_ODP "
 				+ "where PYTANIE_ODPOWIEDZI.ID_PYT = (?)";
 				
@@ -766,33 +769,74 @@ public class DbConnection {
 			PreparedStatement pstmtForAnswers = conn.prepareStatement(fetchAnswersQuery);
 			
 			pstmtForQuestions.setString(1, category);
-			ResultSet answerResultSet = pstmtForQuestions.executeQuery();
+			ResultSet questionResultSet = pstmtForQuestions.executeQuery();
 			
 			String questionContent = null;
 			Integer questionId = null;
 			
-			while (answerResultSet.next()) {
-				questionContent = answerResultSet.getString(1);
-				questionId = answerResultSet.getInt(2);
+			while (questionResultSet.next()) {
+				questionContent = questionResultSet.getString(1);
+				questionId = questionResultSet.getInt(2);
 				
 				pstmtForAnswers.setInt(1, questionId);
-				ResultSet questionResultSet = pstmtForAnswers.executeQuery();
-				ArrayList<Answer> answersList = new ArrayList<Answer>();
+				ResultSet answerResultSet = pstmtForAnswers.executeQuery();
+				
+				ArrayList<Answer> rightAnswersList = new ArrayList<Answer>();
+				ArrayList<Answer> wrongAnswersList = new ArrayList<Answer>();
 				
 				String answerContent = null;
 				Integer answerId = null;
+				Boolean isAnsRight = null;
 				
-				while (questionResultSet.next()) {
-					answerContent = questionResultSet.getString(1);
-					answerId = questionResultSet.getInt(2);
+				while (answerResultSet.next()) {
+					answerContent = answerResultSet.getString(1);
+					answerId = answerResultSet.getInt(2);
+					isAnsRight = (answerResultSet.getInt(3) == 1);
 					
-					answersList.add(new Answer(answerId, answerContent));
+					if(isAnsRight) rightAnswersList.add(new Answer(answerId, answerContent));
+					else wrongAnswersList.add(new Answer(answerId, answerContent));
 				}
 				
-				Collections.shuffle(answersList);
-				answersList = new ArrayList<Answer>(answersList.subList(0, nOfAnswers));
+				Collections.shuffle(rightAnswersList);
+				Collections.shuffle(wrongAnswersList);
+				
+				if(nOfAnswers < rightAnswersList.size() + wrongAnswersList.size()) {
+					if(testData.getIsSingleChoice()) {
+						ArrayList<Answer> resultingList = new ArrayList<Answer>();
+					}
+					else {
+						//answersList = new ArrayList<Answer>(answersList.subList(0, nOfAnswers));
+						ArrayList<Answer> resultingList = new ArrayList<Answer>();
+						Random random = new Random();
+						
+						resultingList.add(rightAnswersList.get(0));
+						rightAnswersList.remove(0);
 
-				allQuestions.add(new Question(answersList, questionContent, category, questionId));
+						int i = 0;
+						while(i < nOfAnswers) {
+							if(random.nextBoolean() && !rightAnswersList.isEmpty()) {
+								resultingList.add(rightAnswersList.get(0));
+								rightAnswersList.remove(0);
+								i++;
+							}
+							else if(!wrongAnswersList.isEmpty()) {
+								resultingList.add(wrongAnswersList.get(0));
+								wrongAnswersList.remove(0);
+								i++;
+							}
+						}
+						
+						allQuestions.add(new Question(resultingList, questionContent, category, questionId));
+					}
+				}
+				else {
+					ArrayList<Answer> resultingList = new ArrayList<Answer>();
+					resultingList.addAll(wrongAnswersList);
+					resultingList.addAll(rightAnswersList);
+					
+					allQuestions.add(new Question(resultingList, questionContent, category, questionId));
+				}
+
 			}
 			pstmtForQuestions.close();
 		} catch (SQLException e) {
@@ -800,16 +844,22 @@ public class DbConnection {
 		}
 		
 		Collections.shuffle(allQuestions);
-		return new ArrayList<Question>(allQuestions.subList(0, nOfQuestions));
+		if(nOfQuestions < allQuestions.size()) {
+			allQuestions = new ArrayList<Question>(allQuestions.subList(0, nOfQuestions));
+		}
+		
+		return allQuestions;
 	}
 
 	public ArrayList<Test> fetchTestFeed() {
 
 		Integer testId = null, numQuestions = null, numAnswers = null;
 		String name = null, description = null, category = null;
+		Boolean singleChoice = null;
 		
 		String testFeedQuery = 
-				"select TESTY.ID_TESTU, TESTY.NAZWA_TESTU, TESTY.OPIS_TESTU, TESTY.LICZBA_PYTAN, TESTY.LICZBA_ODPOWIEDZI,"
+				"select TESTY.ID_TESTU, TESTY.NAZWA_TESTU, TESTY.OPIS_TESTU, TESTY.LICZBA_PYTAN, "
+				+ "TESTY.LICZBA_ODPOWIEDZI, TESTY.JEDNOKROTNY_WYBOR, "
 				+ "to_char(TESTY.CZAS_ROZPOCZECIA,'yyyy-mm-dd hh24:mi'), "
 				+ "to_char(TESTY.CZAS_ZAKONCZENIA,'yyyy-mm-dd hh24:mi'), "
 				+ "KATEGORIE.NAZWA_KAT "
@@ -830,9 +880,10 @@ public class DbConnection {
 				description = rs.getString(3);
 				numQuestions = rs.getInt(4);
 				numAnswers = rs.getInt(5);
-				startTimeStr = rs.getString(6);
-				endTimeStr = rs.getString(7);
-				category = rs.getString(8);
+				singleChoice = (rs.getInt(6) == 1);
+				startTimeStr = rs.getString(7);
+				endTimeStr = rs.getString(8);
+				category = rs.getString(9);
 
 				// allParticipants:
 				// [0] - organizers
@@ -845,7 +896,7 @@ public class DbConnection {
 				startTime = LocalDateTime.parse(startTimeStr, formatter);
 				endTime = LocalDateTime.parse(endTimeStr, formatter);
 
-				testFeed.add(new Test(testId, name, category, numQuestions, numAnswers, startTime, endTime, description,
+				testFeed.add(new Test(testId, singleChoice, name, category, numQuestions, numAnswers, startTime, endTime, description,
 						new ArrayList<Question>(), allParticipants.get(0), allParticipants.get(1), allParticipants.get(2)));
 			}
 			pstmt.close();

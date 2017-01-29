@@ -124,7 +124,7 @@ public class IndividualTestCreatorController implements Controller {
 					.plusHours(Long.parseLong(durationHr))
 					.plusMinutes(Long.parseLong(durationMin));
 
-			newTest = new Test(name, category, numberOfQuestions,
+			newTest = new Test(!multipleChoiceCheckBox.isSelected(), name, category, numberOfQuestions,
 					numberOfAnswers, startTime, endTime, description,
 					ApplicationController.currentUser);
 

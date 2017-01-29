@@ -3,16 +3,21 @@ package testGen.controller;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
-import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -34,6 +39,8 @@ public class ConductTestController implements Controller {
 	@FXML private Label questionContentLabel;
 	@FXML private TextArea questionTextArea;
 	@FXML private FlowPane answersFlowPane;
+	
+	@FXML private ListView<Label> questionsListView;
 
 	public static Test conductedTest;
 	private Integer currentQuestionIndex;
@@ -98,17 +105,50 @@ public class ConductTestController implements Controller {
 		numberOfCurrentQuestionLabel.setText(questionDisplayNumber.toString());
 
 		answersFlowPane.getChildren().clear();
-		for (Answer answer : conductedTest.getQuestions()
-				.get(currentQuestionIndex).getPossibleAnswers()) {
-
-			Label answerLabel = new Label(answer.getAnswerContent());
-			answerLabel.setId(answer.getId().toString());
-			answerLabel.setPrefWidth(2017);
-			answerLabel.setStyle(
-					"-fx-font: 18px Inconsolata; -fx-padding: 5 5 5 5;");
-
-			answersFlowPane.getChildren().add(answerLabel);
+		
+		if(conductedTest.getIsSingleChoice()) {
+			ToggleGroup radioGroup = new ToggleGroup();
+			
+			for (Answer answer : conductedTest.getQuestions().get(currentQuestionIndex).getPossibleAnswers()) {							
+				RadioButton radioButton = new RadioButton(answer.getAnswerContent());
+				
+				radioButton.setId(answer.getId().toString());
+				radioButton.setPrefWidth(answersFlowPane.getWidth());
+				radioButton.setToggleGroup(radioGroup);
+				
+				radioButton.setSelected(answer.getIsSelected());
+				radioButton.selectedProperty().addListener(new ChangeListener<Boolean>() {
+				    @Override
+				    public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+				    	answer.setIsSelected(newValue.booleanValue());
+				    }
+				});
+				
+				answersFlowPane.getChildren().add(radioButton);
+			}
 		}
+		else {
+			for (Answer answer : conductedTest.getQuestions().get(currentQuestionIndex).getPossibleAnswers()) {
+				CheckBox checkBox = new CheckBox(answer.getAnswerContent());
+				
+				checkBox.setId(answer.getId().toString());
+				checkBox.setPrefWidth(answersFlowPane.getWidth());
+
+				checkBox.setSelected(answer.getIsSelected());
+				checkBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
+				    @Override
+				    public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+				    	answer.setIsSelected(newValue.booleanValue());
+				    }
+				});
+				
+				answersFlowPane.getChildren().add(checkBox);
+			}
+		}
+		
+		questionsListView.getSelectionModel().select(currentQuestionIndex);
+		questionsListView.getFocusModel().focus(currentQuestionIndex);
+		questionsListView.scrollTo(currentQuestionIndex);
 	}
 
 	@FXML public void initialize() {

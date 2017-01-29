@@ -22,6 +22,7 @@ public class Test implements Serializable {
 	private Integer nOfQuestions;
 	private Integer nOfAnswers;
 	private String description;
+	private Boolean isSingleChoice;
 
 	public int getnOfQuestions() {
 		return nOfQuestions;
@@ -89,15 +90,24 @@ public class Test implements Serializable {
 	public void setQuestions(ArrayList<Question> questions) {
 		this.questions = questions;
 	}
+	
+	public Boolean getIsSingleChoice() {
+		return isSingleChoice;
+	}
 
-	public Test(int id, String name, String category, Integer numQ, Integer numAns, LocalDateTime startTime, LocalDateTime endTime,
+	public void setIsSingleChoice(Boolean isSingleChoice) {
+		this.isSingleChoice = isSingleChoice;
+	}
+
+	public Test(int id, boolean singleChoice, String name, String category, Integer numQ, Integer numAns, LocalDateTime startTime, LocalDateTime endTime,
 			String description, ArrayList<User> organizers) {
-		this(name, category, numQ, numAns, startTime, endTime, description, organizers);
+		this(singleChoice, name, category, numQ, numAns, startTime, endTime, description, organizers);
 		this.id = id;
 	}
 
-	public Test(String name, String category, Integer numQ, Integer numAns, LocalDateTime startTime, LocalDateTime endTime,
+	public Test(boolean singleChoice, String name, String category, Integer numQ, Integer numAns, LocalDateTime startTime, LocalDateTime endTime,
 			String description, ArrayList<User> organizers) {
+		this.isSingleChoice = singleChoice;
 		this.name = name;
 		this.category = category;
 		this.nOfQuestions = numQ;
@@ -108,10 +118,11 @@ public class Test implements Serializable {
 		this.organizers = organizers;
 	}
 
-	public Test(String name, String category, Integer numQ, Integer numAns,
+	public Test(boolean singleChoice, String name, String category, Integer numQ, Integer numAns,
 			LocalDateTime startTime, LocalDateTime endTime, String description,
 			ArrayList<Question> questions, ArrayList<User> organizers,
 			ArrayList<User> participants, ArrayList<User> pending) {
+		this.isSingleChoice = singleChoice;
 		this.name = name;
 		this.category = category;
 		this.nOfQuestions = numQ;
@@ -125,11 +136,11 @@ public class Test implements Serializable {
 		this.pending = pending;
 	}
 
-	public Test(int id, String name, String category, Integer numQ, Integer numAns,
+	public Test(int id, boolean singleChoice, String name, String category, Integer numQ, Integer numAns,
 			LocalDateTime startTime, LocalDateTime endTime, String description,
 			ArrayList<Question> questions, ArrayList<User> organizers,
 			ArrayList<User> participants, ArrayList<User> pending) {
-		this(name, category, numQ, numAns, startTime, endTime, description,
+		this(singleChoice, name, category, numQ, numAns, startTime, endTime, description,
 				questions, organizers, participants, pending);
 		this.id = id;
 	}
