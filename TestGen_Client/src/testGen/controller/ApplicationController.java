@@ -752,8 +752,8 @@ public class ApplicationController implements Controller {
 	}
 
 	@FXML public void addTestBtn() {
-		openNewWindow(applicationWindow, "view/TestCreatorLayout.fxml", 600,
-				650, false, "Dodaj test");
+		openNewWindow(applicationWindow, "view/TestCreatorLayout.fxml", 500,
+				520, false, "Dodaj test");
 	}
 
 	@FXML public void editProfileBtn() {
