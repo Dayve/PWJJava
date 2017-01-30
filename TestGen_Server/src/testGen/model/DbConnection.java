@@ -806,7 +806,7 @@ public class DbConnection {
 					.prepareStatement(fetchAnswersQuery);
 
 			for (Question question : questionsToReturn) {
-				pstmtForAnswers.setInt(1, questionId);
+				pstmtForAnswers.setInt(1, question.getID());
 				ResultSet answerResultSet = pstmtForAnswers.executeQuery();
 
 				ArrayList<Answer> rightAnswersList = new ArrayList<Answer>();
@@ -872,6 +872,11 @@ public class DbConnection {
 				}
 				Collections.shuffle(resultingList);
 				question.setPossibleAnswers(resultingList);
+				System.out.println(
+						"Ustawiam odp dla pytania: " + question.getContent());
+				for (Answer a : resultingList) {
+					System.out.println(a.getAnswerContent() + "\n");
+				}
 			}
 			pstmtForAnswers.close();
 		} catch (SQLException e) {
@@ -944,76 +949,78 @@ public class DbConnection {
 				+ "from PYTANIA join PYTANIE_ODPOWIEDZI on PYTANIA.ID_PYT = PYTANIE_ODPOWIEDZI.ID_PYT "
 				+ "join ODPOWIEDZI on PYTANIE_ODPOWIEDZI.ID_ODP = ODPOWIEDZI.ID_ODP "
 				+ "where ODPOWIEDZI.POPRAWNOSC = 1";
-		
-		Result obtainedResult = new Result(givenTest.getName(), givenTest.getId(), givenTest.getnOfQuestions());
+
+		Result obtainedResult = new Result(givenTest.getName(),
+				givenTest.getId(), givenTest.getnOfQuestions());
 		HashMap<Integer, HashMap<Integer, String>> qID_RightAnswersIDsAndContents = new HashMap<Integer, HashMap<Integer, String>>();
-				
+
 		try {
 			PreparedStatement pstmt;
-			
+
 			Integer qID = null, ansID = null;
 			String ansContent = null;
 
 			pstmt = conn.prepareStatement(questionAndAnswersQuery);
 			ResultSet rs = pstmt.executeQuery();
-			
+
 			while (rs.next()) {
 				qID = rs.getInt(1);
 				ansID = rs.getInt(2);
 				ansContent = rs.getString(3);
-				
-				if(!qID_RightAnswersIDsAndContents.containsKey(qID)) {
+
+				if (!qID_RightAnswersIDsAndContents.containsKey(qID)) {
 					HashMap<Integer, String> initialMap = new HashMap<Integer, String>();
 					initialMap.put(ansID, ansContent);
-					
+
 					qID_RightAnswersIDsAndContents.put(qID, initialMap);
-				}
-				else {
-					qID_RightAnswersIDsAndContents.get(qID).put(ansID, ansContent);
+				} else {
+					qID_RightAnswersIDsAndContents.get(qID).put(ansID,
+							ansContent);
 				}
 			}
 			pstmt.close();
-		}
-		catch (SQLException e) {
+		} catch (SQLException e) {
 			e.printStackTrace();
 			return null;
 		}
-		
-		for(Question question : givenTest.getQuestions()) {
+
+		for (Question question : givenTest.getQuestions()) {
 			ArrayList<Integer> yourAnswersIDs = new ArrayList<Integer>();
 			String yourAnswersInfo = "", rightAnswersInfo = "";
-			
+
 			// Describe your answers:
-			for(Answer answer : question.getPossibleAnswers()) {
-				if(answer.getIsSelected()) {
+			for (Answer answer : question.getPossibleAnswers()) {
+				if (answer.getIsSelected()) {
 					yourAnswersIDs.add(answer.getId());
 					yourAnswersInfo += answer.getAnswerContent() + "\n";
 				}
 			}
-			
+
 			// Describe the right answers:
-			HashMap<Integer, String> ansIDs_ansContents = qID_RightAnswersIDsAndContents.get(question.getID());
-			for(String rightAnsContent : ansIDs_ansContents.values()) {
+			HashMap<Integer, String> ansIDs_ansContents = qID_RightAnswersIDsAndContents
+					.get(question.getID());
+			for (String rightAnsContent : ansIDs_ansContents.values()) {
 				rightAnswersInfo += rightAnsContent + "\n";
 			}
 
-			// If you have exactly the same answer(s) as you were supposed to have:
-			if(yourAnswersIDs.size() == qID_RightAnswersIDsAndContents.get(question.getID()).values().size()
-				&& yourAnswersIDs.containsAll(qID_RightAnswersIDsAndContents.get(question.getID()).keySet()))
-			{
+			// If you have exactly the same answer(s) as you were supposed to
+			// have:
+			if (yourAnswersIDs.size() == qID_RightAnswersIDsAndContents
+					.get(question.getID()).values().size()
+					&& yourAnswersIDs.containsAll(qID_RightAnswersIDsAndContents
+							.get(question.getID()).keySet())) {
 				obtainedResult.addOnePoint();
-				
+
 				obtainedResult.addPartialResultDescription(
-					new VerifiedQuestionDescription(question.getContent(), yourAnswersInfo, rightAnswersInfo, true)
-				);
-			}
-			else {
+						new VerifiedQuestionDescription(question.getContent(),
+								yourAnswersInfo, rightAnswersInfo, true));
+			} else {
 				obtainedResult.addPartialResultDescription(
-					new VerifiedQuestionDescription(question.getContent(), yourAnswersInfo, rightAnswersInfo, false)
-				);
+						new VerifiedQuestionDescription(question.getContent(),
+								yourAnswersInfo, rightAnswersInfo, false));
 			}
 		}
-		
+
 		return obtainedResult;
 	}
 

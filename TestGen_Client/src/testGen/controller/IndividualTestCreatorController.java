@@ -180,5 +180,4 @@ public class IndividualTestCreatorController implements Controller {
 			closeWindow(individualTestCreatorWindow);
 		}
 	}
-
 }

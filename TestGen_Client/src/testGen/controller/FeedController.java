@@ -454,9 +454,11 @@ public class FeedController implements Controller {
 					// add post's content (regular font)
 					Text content = new Text(p.getContent());
 					content.setStyle(regularStyle);
+					
 					TextFlow flow = new TextFlow(date, author, content);
 					flow.setId(p.getPostsId().toString());
 					flow.setPrefWidth(lv.getWidth());
+					
 					if (existingTF != null) {
 						existingTF = new TextFlow(flow);
 					} else {

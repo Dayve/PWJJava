@@ -218,41 +218,35 @@ public class ConductTestController implements Controller {
 		});
 	}
 
-	private void stopTest() {
-		timeline.stop();
-//		String eventName;
-//		SocketEvent se = new SocketEvent("reqCheckTest",
-//				conductedTest);
-//		NetworkConnection.sendSocketEvent(se);
-//		SocketEvent res = NetworkConnection.rcvSocketEvent(
-//				"questionsFetched", "questionsFetchingError");
-//
-//		eventName = res.getName();
-//
-//		if (eventName.equals("questionsFetched")) {
-//			conductedTest = res.getObject(Test.class);
-//		}
-	}
+//	private void stopTest() {
+//		timeline.stop();
+//	}
 
 	@FXML private void checkTest() {
-		String eventName;
 		SocketEvent se = new SocketEvent("checkThisTest", conductedTest);
 		NetworkConnection.sendSocketEvent(se);
 		SocketEvent res = NetworkConnection.rcvSocketEvent("testVerified",
 				"testVerifyingError");
 
-		eventName = res.getName();
+		final String eventName = res.getName();
 
-		if (eventName.equals("testVerified")) {
-			Result testsResult = res.getObject(Result.class);
-			System.out.println("Wyniki: ");
-			for(VerifiedQuestionDescription vqd : testsResult.getPartialResultDescriptions()) {
-				System.out.println("Question: " + vqd.questionContent);
-				System.out.println("Were you right: " + vqd.wereYouRight);
-				System.out.println("Your answer: " + vqd.yourAnswer);
-				System.out.println("Right answer: " + vqd.rightAnswer);
+		Platform.runLater(new Runnable() {
+			@Override public void run() {
+				if(eventName.equals("testVerified")) {
+					timeline.stop();
+					
+					Result testResult = res.getObject(Result.class);
+					TestResultController.testResult = testResult;
+					
+					openNewWindow(conductTestWindow,
+							"view/TestResultLayout.fxml", 600, 600, false,
+							"Wyniki testu: \"" + testResult.getTestName() + "\"");
+					closeWindow(conductTestWindow);
+				} else {
+					openDialogBox(conductTestWindow, "Nie udało się uzyskać wyników testu.");
+				}
 			}
-		}
+		});
 	}
 
 	private void updateTestsAnswers() {
