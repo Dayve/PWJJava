@@ -8,6 +8,8 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -19,15 +21,18 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 import testGen.model.Answer;
 import testGen.model.Controller;
 import testGen.model.NetworkConnection;
+import testGen.model.Question;
 import testGen.model.Result;
 import testGen.model.SocketEvent;
 import testGen.model.Test;
+import testGen.model.VerifiedQuestionDescription;
 
 public class ConductTestController implements Controller {
 
@@ -39,7 +44,6 @@ public class ConductTestController implements Controller {
 	@FXML private Label questionContentLabel;
 	@FXML private TextArea questionTextArea;
 	@FXML private FlowPane answersFlowPane;
-	
 	@FXML private ListView<Label> questionsListView;
 
 	public static Test conductedTest;
@@ -91,7 +95,6 @@ public class ConductTestController implements Controller {
 						timeLeftLabel.setText(
 								(hoursToDisplayStr + ":" + minutesToDisplayStr
 										+ ":" + secondsToDisplayStr));
-						System.out.println(diffInSeconds);
 					}
 				}), new KeyFrame(Duration.seconds(1)));
 		timeline.setCycleCount(timerDuration.intValue() + 1);
@@ -105,56 +108,81 @@ public class ConductTestController implements Controller {
 		numberOfCurrentQuestionLabel.setText(questionDisplayNumber.toString());
 
 		answersFlowPane.getChildren().clear();
-		
-		if(conductedTest.getIsSingleChoice()) {
+
+		if (conductedTest.getIsSingleChoice()) {
 			ToggleGroup radioGroup = new ToggleGroup();
-			
-			for (Answer answer : conductedTest.getQuestions().get(currentQuestionIndex).getPossibleAnswers()) {							
-				RadioButton radioButton = new RadioButton(answer.getAnswerContent());
-				
+
+			for (Answer answer : conductedTest.getQuestions()
+					.get(currentQuestionIndex).getPossibleAnswers()) {
+				RadioButton radioButton = new RadioButton(
+						answer.getAnswerContent());
+
 				radioButton.setId(answer.getId().toString());
 				radioButton.setPrefWidth(answersFlowPane.getWidth());
 				radioButton.setToggleGroup(radioGroup);
-				
+				radioButton.setStyle("-fx-font: 18px Inconsolata; -fx-padding: 5 5 5 5;");
+
 				radioButton.setSelected(answer.getIsSelected());
-				radioButton.selectedProperty().addListener(new ChangeListener<Boolean>() {
-				    @Override
-				    public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				    	answer.setIsSelected(newValue.booleanValue());
-				    }
-				});
-				
+				radioButton.selectedProperty()
+						.addListener(new ChangeListener<Boolean>() {
+							@Override public void changed(
+									ObservableValue<? extends Boolean> observable,
+									Boolean oldValue, Boolean newValue) {
+								answer.setIsSelected(newValue.booleanValue());
+							}
+						});
+
 				answersFlowPane.getChildren().add(radioButton);
 			}
-		}
-		else {
-			for (Answer answer : conductedTest.getQuestions().get(currentQuestionIndex).getPossibleAnswers()) {
+		} else {
+			for (Answer answer : conductedTest.getQuestions()
+					.get(currentQuestionIndex).getPossibleAnswers()) {
 				CheckBox checkBox = new CheckBox(answer.getAnswerContent());
-				
+
 				checkBox.setId(answer.getId().toString());
 				checkBox.setPrefWidth(answersFlowPane.getWidth());
+				checkBox.setStyle("-fx-font: 18px Inconsolata; -fx-padding: 5 5 5 5;");
 
 				checkBox.setSelected(answer.getIsSelected());
-				checkBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
-				    @Override
-				    public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				    	answer.setIsSelected(newValue.booleanValue());
-				    }
-				});
-				
+				checkBox.selectedProperty()
+						.addListener(new ChangeListener<Boolean>() {
+							@Override public void changed(
+									ObservableValue<? extends Boolean> observable,
+									Boolean oldValue, Boolean newValue) {
+								answer.setIsSelected(newValue.booleanValue());
+							}
+						});
 				answersFlowPane.getChildren().add(checkBox);
 			}
 		}
-		
+
 		questionsListView.getSelectionModel().select(currentQuestionIndex);
 		questionsListView.getFocusModel().focus(currentQuestionIndex);
 		questionsListView.scrollTo(currentQuestionIndex);
 	}
 
+	private void fillListOfQuestions() {
+		ObservableList<Label> labelsList = FXCollections.observableArrayList();
+		questionsListView.getItems().clear();
+
+		Label label = null;
+		int i = 0;
+
+		for (Question question : conductedTest.getQuestions()) {
+			label = new Label((i + 1) + ". " + question.getContent());
+			label.setFont(Font.font("Inconsolata", 18));
+
+			label.setId(new Integer(i).toString());
+			label.setPrefWidth(1000);
+
+			labelsList.add(label);
+			i++;
+		}
+		questionsListView.setItems(labelsList);
+	}
+
 	@FXML public void initialize() {
-		
 		requestTestWithQuestions();
-		System.out.println("Dostałem test: " + conductedTest.getName());
 		if (conductedTest == null) {
 			closeWindow(conductTestWindow);
 		}
@@ -162,10 +190,24 @@ public class ConductTestController implements Controller {
 
 		totalNumberOfQuestionsLabel
 				.setText(conductedTest.getnOfQuestions().toString());
-		updateQuestionAndAnswersContainers();
+
+		fillListOfQuestions();
 		bindToTime();
+
+		questionsListView.getSelectionModel().selectedIndexProperty()
+				.addListener(new ChangeListener<Number>() {
+					@Override public void changed(
+							ObservableValue<? extends Number> observable,
+							Number oldValue, Number newValue) {
+
+						currentQuestionIndex = newValue.intValue();
+						updateQuestionAndAnswersContainers();
+					}
+				});
+
 		Platform.runLater(new Runnable() {
 			@Override public void run() {
+				updateQuestionAndAnswersContainers();
 				Stage stage = (Stage) conductTestWindow.getScene().getWindow();
 				stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 					public void handle(WindowEvent we) {
@@ -176,35 +218,35 @@ public class ConductTestController implements Controller {
 		});
 	}
 
-	private void stopTest() {
-		timeline.stop();
-//		String eventName;
-//		SocketEvent se = new SocketEvent("reqCheckTest",
-//				conductedTest);
-//		NetworkConnection.sendSocketEvent(se);
-//		SocketEvent res = NetworkConnection.rcvSocketEvent(
-//				"questionsFetched", "questionsFetchingError");
-//
-//		eventName = res.getName();
-//
-//		if (eventName.equals("questionsFetched")) {
-//			conductedTest = res.getObject(Test.class);
-//		}
-	}
+//	private void stopTest() {
+//		timeline.stop();
+//	}
 
 	@FXML private void checkTest() {
-		String eventName;
 		SocketEvent se = new SocketEvent("checkThisTest", conductedTest);
 		NetworkConnection.sendSocketEvent(se);
 		SocketEvent res = NetworkConnection.rcvSocketEvent("testVerified",
 				"testVerifyingError");
 
-		eventName = res.getName();
+		final String eventName = res.getName();
 
-		if (eventName.equals("testVerified")) {
-			Result testsResult = res.getObject(Result.class);
-			System.out.println(testsResult.getPartialResultDescriptions());
-		}
+		Platform.runLater(new Runnable() {
+			@Override public void run() {
+				if(eventName.equals("testVerified")) {
+					timeline.stop();
+					
+					Result testResult = res.getObject(Result.class);
+					TestResultController.testResult = testResult;
+					
+					openNewWindow(conductTestWindow,
+							"view/TestResultLayout.fxml", 600, 600, false,
+							"Wyniki testu: \"" + testResult.getTestName() + "\"");
+					closeWindow(conductTestWindow);
+				} else {
+					openDialogBox(conductTestWindow, "Nie udało się uzyskać wyników testu.");
+				}
+			}
+		});
 	}
 
 	private void updateTestsAnswers() {
@@ -215,22 +257,17 @@ public class ConductTestController implements Controller {
 	@FXML private void previousQuestion() {
 		if (currentQuestionIndex > 0) {
 			currentQuestionIndex--;
-		} else {
-			currentQuestionIndex = conductedTest.getQuestions().size() - 1;
 		}
-		updateQuestionAndAnswersContainers();
 
+		updateQuestionAndAnswersContainers();
 		new Thread(() -> updateTestsAnswers());
 	}
 
 	@FXML private void nextQuestion() {
 		if (currentQuestionIndex < conductedTest.getQuestions().size() - 1) {
 			currentQuestionIndex++;
-		} else {
-			currentQuestionIndex = 0;
 		}
 		updateQuestionAndAnswersContainers();
-
 		new Thread(() -> updateTestsAnswers());
 	}
 }

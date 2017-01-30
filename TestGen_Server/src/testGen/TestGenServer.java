@@ -23,6 +23,7 @@ import testGen.model.SocketEvent;
 import testGen.model.User;
 import testGen.model.User.UsersRole;
 import testGen.model.Validator;
+import testGen.model.VerifiedQuestionDescription;
 
 public class TestGenServer implements Runnable {
 
@@ -529,6 +530,7 @@ public class TestGenServer implements Runnable {
 			// givenTest is not expected to have any questions:
 			Collections.shuffle(questions);
 			givenTest.setQuestions(questions);
+			givenTest.setnOfQuestions(questions.size());
 
 			
 			if (questions != null) {
@@ -550,6 +552,14 @@ public class TestGenServer implements Runnable {
 		
 		private void handleTestChecking(Test givenTest) {
 			Result testResult = dbConn.checkTestResults(givenTest);
+			
+			System.out.println("WYNIKI: ");
+			for(VerifiedQuestionDescription vqd : testResult.getPartialResultDescriptions()) {
+				System.out.println("Question: " + vqd.questionContent);
+				System.out.println("Were you right: " + vqd.wereYouRight);
+				System.out.println("Your answer: " + vqd.yourAnswer);
+				System.out.println("Right answer: " + vqd.rightAnswer);
+			}
 			
 			if (testResult != null) {
 				try {
